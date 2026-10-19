@@ -211,8 +211,9 @@ VinaMetal is a derivative work of AutoDock Vina, Copyright (c) 2006-2010,
 The Scripps Research Institute, distributed under the Apache License,
 Version 2.0. The original copyright notices in the source files are retained.
 
-Metal parameters are derived from AutoDock 4 (Copyright (c) 1989-2024,
-The Scripps Research Institute). The AutoDock 4 parameter data redistributed in
+Metal parameters are derived from AutoDock 4, Copyright (C) 1989-2007,
+Garrett M. Morris, David S. Goodsell, Ruth Huey and Arthur J. Olson,
+All Rights Reserved. The AutoDock 4 parameter data redistributed in
 data/ad4_reference/ are licensed under the GNU General Public License v2.0;
 see data/ad4_reference/COPYING.
 
