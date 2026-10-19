@@ -1,0 +1,57 @@
+# Regression: no-metal receptor is byte-identical to AutoDock Vina 1.2.7
+
+Date: 2026-10-19
+Environment: WSL2 Ubuntu 22.04.5 LTS, g++ 11.4.0, CMake 3.22.1, Boost 1.74.0
+
+VinaMetal was built from this repository with CMake (Release). The reference is
+the unmodified AutoDock Vina 1.2.7 binary distributed by the VinaMetal 1.0.0
+release package (`builds/vina_original_1.2.7`). The receptor has no
+parametrized metal, so metal scoring is automatically disabled
+(`--metals auto`).
+
+The test uses `--local_only`, which exercises the scoring function and analytic
+gradients deterministically (no Monte Carlo randomness). The global-search path
+is not used for this comparison because the two binaries link different Boost
+versions (1.74 vs 1.83), and Boost's normal distribution produces different
+random streams; that affects trajectories, not energies.
+
+## Commands
+
+    vina --receptor 1iep_receptor.pdbqt \
+         --ligand 1iep_ligand.pdbqt \
+         --center_x 15.19 --center_y 53.903 --center_z 16.917 \
+         --size_x 20 --size_y 20 --size_z 20 \
+         --local_only --seed 42 --out reg_vinametal.pdbqt
+
+    vina_original_1.2.7 --receptor 1iep_receptor.pdbqt \
+         --ligand 1iep_ligand.pdbqt \
+         --center_x 15.19 --center_y 53.903 --center_z 16.917 \
+         --size_x 20 --size_y 20 --size_z 20 \
+         --local_only --seed 42 --out reg_vina127.pdbqt
+
+## Output
+
+    VinaMetal v1.0.0:
+      Estimated Free Energy of Binding : -13.170 (kcal/mol)
+      Ligand - Receptor                : -18.559 (kcal/mol)
+
+    AutoDock Vina 1.2.7 (bb64e5e):
+      Estimated Free Energy of Binding : -13.170 (kcal/mol)
+      Ligand - Receptor                : -18.559 (kcal/mol)
+
+## Result
+
+    cmp reg_vinametal.pdbqt reg_vina127.pdbqt  ->  BYTE_IDENTICAL
+
+    SHA-256 (both files):
+    8d42f6ead10ba3036c98e378334ac08ffaf306892e0a6c43656acd8c2e410883
+
+The complete minimized PDBQT output, including every coordinate, is identical
+between VinaMetal and unmodified AutoDock Vina 1.2.7 for a receptor without
+parametrized metal ions.
+
+## Reproduce
+
+    tests/test_regression_no_metal.sh build/vina /path/to/vina_original_1.2.7
+
+The script exits non-zero if the outputs differ.

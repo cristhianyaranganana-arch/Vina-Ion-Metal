@@ -1,0 +1,29 @@
+{
+  "_comment": "VinaMetal metal ion parameter overrides. Only the fields present are overridden. Built-in sources: AD4.1_bound.dat (Rii/epsii/vol/solpar), Harding Acta Cryst D (distances, CN, geometry). Cu2+/Ni2+ are PLACEHOLDER-UNVALIDATED.",
+  "Zn2+": {
+    "Rii": 1.48, "epsii": 0.550, "vol": 1.70, "solpar": -0.00110,
+    "ideal_cn": 4, "geometry": "tetrahedral",
+    "d_N": 2.05, "d_O": 2.05, "d_S": 2.32,
+    "cn_cutoff": 3.0, "geom_bonus_max": 1.0
+  },
+  "Mg2+": {
+    "ideal_cn": 6, "geometry": "octahedral",
+    "d_O": 2.08
+  },
+  "Fe3+": {
+    "_todo": "oxidation-state-specific parameters pending validation",
+    "d_O": 2.00
+  },
+  "Cu2+": {
+    "_todo": "PLACEHOLDER-UNVALIDATED (not calibrated in AD4)",
+    "Rii": 1.40, "epsii": 0.550,
+    "ideal_cn": 4, "geometry": "square-planar",
+    "d_N": 2.00, "d_O": 1.98, "d_S": 2.22,
+    "cn_cutoff": 2.9
+  },
+  "Ni2+": {
+    "_todo": "PLACEHOLDER-UNVALIDATED (not calibrated in AD4)",
+    "Rii": 1.36, "epsii": 0.550,
+    "ideal_cn": 6, "geometry": "octahedral"
+  }
+}

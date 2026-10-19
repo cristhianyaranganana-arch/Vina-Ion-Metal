@@ -1,0 +1,91 @@
+cff-version: 1.2.0
+message: "If you use VinaMetal, please cite it and the AutoDock Vina / AutoDock 4 foundations listed in the references."
+title: VinaMetal
+type: software
+version: 1.0.0
+date-released: "2026-10-19"
+license: Apache-2.0
+repository-code: "https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal"
+keywords:
+  - molecular docking
+  - metalloprotein
+  - metal coordination
+  - AutoDock Vina
+  - C++
+authors:
+  - name: "[PLACEHOLDER: NOMBRE COMPLETO]"
+    email: cristhianyaranganana@gmail.com
+    orcid: "https://orcid.org/0009-0000-5539-0526"
+    affiliation: "[INSTITUCIÓN]"
+abstract: >-
+  VinaMetal is a fork of AutoDock Vina 1.2.7 that integrates AutoDock 4 metal
+  coordination physics into the native scoring function: metal-specific 12-6
+  van der Waals terms, a differentiable coordination-number penalty and a
+  bounded geometry bonus, all with analytic gradients. It also detects the
+  coordination sites already occupied by the rigid receptor and adjusts the
+  ligand coordination-number target automatically. Redocking of GlfT2 (Mn2+)
+  and PDB 1s63 (Zn2+) reproduced the crystal binding modes with heavy-atom
+  RMSDs of 0.95 A and 0.33 A, respectively.
+references:
+  - type: article
+    title: "AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, efficient optimization, and multithreading"
+    authors:
+      - family-names: Trott
+        given-names: Oleg
+      - family-names: Olson
+        given-names: Arthur J.
+    journal: Journal of Computational Chemistry
+    volume: 31
+    issue: 2
+    start: 455
+    end: 461
+    year: 2010
+    doi: "10.1002/jcc.21334"
+  - type: article
+    title: "AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings"
+    authors:
+      - family-names: Eberhardt
+        given-names: Jerome
+      - family-names: Santos-Martins
+        given-names: Diogo
+      - family-names: Tillack
+        given-names: Andreas F.
+      - family-names: Forli
+        given-names: Stefano
+    journal: Journal of Chemical Information and Modeling
+    volume: 61
+    issue: 8
+    start: 3891
+    end: 3898
+    year: 2021
+    doi: "10.1021/acs.jcim.1c00203"
+  - type: article
+    title: "AutoDock4Zn: An Improved AutoDock Force Field for Small-Molecule Docking to Zinc Metalloproteins"
+    authors:
+      - family-names: Santos-Martins
+        given-names: Diogo
+      - family-names: Forli
+        given-names: Stefano
+      - family-names: Ramos
+        given-names: Maria J.
+      - family-names: Olson
+        given-names: Arthur J.
+    journal: Journal of Chemical Information and Modeling
+    volume: 54
+    issue: 8
+    start: 1931
+    end: 1941
+    year: 2014
+    doi: "10.1021/ci500209e"
+  - type: article
+    title: "Geometry of metal-ligand interactions in proteins"
+    authors:
+      - family-names: Harding
+        given-names: Marjorie M.
+    journal: Acta Crystallographica Section D
+    volume: 57
+    issue: 3
+    start: 401
+    end: 411
+    year: 2001
+    doi: "10.1107/S0907444900019168"

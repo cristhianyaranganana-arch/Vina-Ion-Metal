@@ -1,0 +1,48 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+dist/
+
+# Compiled objects and binaries
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+*.cmake.stamp
+
+# Docking outputs and scratch files
+*.pdbqt
+!examples/**/*.pdbqt
+!tests/data/*.pdbqt
+*_out.pdbqt
+*.dlg
+*.log
+!docs/validation/*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
