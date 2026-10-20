@@ -4,6 +4,7 @@
 [![CI](https://github.com/cristhianyaranganana-arch/VinaMetal/actions/workflows/build.yml/badge.svg)](https://github.com/cristhianyaranganana-arch/VinaMetal/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/cristhianyaranganana-arch/VinaMetal)](https://github.com/cristhianyaranganana-arch/VinaMetal/releases)
 ![Platform: Linux x64](https://img.shields.io/badge/platform-Linux%20x64-blue.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23499212.svg)](https://doi.org/10.5281/zenodo.23499212)
 
 **AutoDock Vina fork with native, physics-based transition metal coordination
 and automatic binding site occupancy detection.**
