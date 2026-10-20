@@ -1,0 +1,29 @@
+{
+  "title": "VinaMetal",
+  "version": "v1.0.0",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Yaranga Nana, Christian",
+      "affiliation": "Universidad Norbert Wiener",
+      "orcid": "0009-0000-5539-0526"
+    }
+  ],
+  "description": "<p>VinaMetal is a fork of AutoDock Vina 1.2.7 that integrates AutoDock 4 metal coordination physics into the native scoring function: metal-specific 12-6 van der Waals terms, a differentiable coordination-number penalty and a bounded geometry bonus, all with analytic gradients. It detects coordination sites already occupied by the rigid receptor and adjusts the ligand coordination-number target automatically. Redocking of GlfT2 (Mn2+) and PDB 1s63 (Zn2+) reproduced the crystal binding modes with heavy-atom RMSDs of 0.95 A and 0.33 A.</p>",
+  "license": "Apache-2.0",
+  "keywords": [
+    "molecular docking",
+    "metalloprotein",
+    "metal coordination",
+    "AutoDock Vina",
+    "C++"
+  ],
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/cristhianyaranganana-arch/VinaMetal",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
