@@ -51,3 +51,7 @@ should be considered before production use or publication.
     PDB 4FIY chain A, Mn²⁺; PDB 1s63, Zn²⁺) plus analytic-gradient tests. A
     larger multi-complex benchmark and leave-one-out calibration remain
     pending.
+
+11. **Linux x86-64 release only.** The GitHub Actions workflow currently
+    produces prebuilt assets only for Linux x86-64. Windows users can build
+    from source; a prebuilt Windows binary is planned for a future release.

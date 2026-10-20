@@ -1,15 +1,19 @@
 # VinaMetal
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![CI](https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal/actions/workflows/build.yml/badge.svg)](https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/PLACEHOLDER-GITHUB-USER/VinaMetal)](https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal/releases)
-[![DOI](https://zenodo.org/badge/DOI/PLACEHOLDER-ZENODO-DOI.svg)](https://doi.org/PLACEHOLDER-ZENODO-DOI)
+[![CI](https://github.com/cristhianyaranganana-arch/VinaMetal/actions/workflows/build.yml/badge.svg)](https://github.com/cristhianyaranganana-arch/VinaMetal/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/cristhianyaranganana-arch/VinaMetal)](https://github.com/cristhianyaranganana-arch/VinaMetal/releases)
+![Platform: Linux x64](https://img.shields.io/badge/platform-Linux%20x64-blue.svg)
 
 **AutoDock Vina fork with native, physics-based transition metal coordination
 and automatic binding site occupancy detection.**
 
 VinaMetal 1.0.0 is a fork of AutoDock Vina 1.2.7 developed for reproducible
 docking into metalloprotein active sites.
+
+> **Platform support:** the prebuilt release assets are **Linux x86-64 only**.
+> Windows users can still build from source; a prebuilt Windows binary is
+> planned for a future release.
 
 ## The Problem
 
@@ -96,11 +100,11 @@ See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for the complete list.
 
     @software{vinametal2026,
       title        = {VinaMetal},
-      author       = {{[PLACEHOLDER: NOMBRE COMPLETO]}},
+      author       = {Christian Yaranga Nana},
       year         = {2026},
       version      = {1.0.0},
-      doi          = {[PLACEHOLDER: ZENODO DOI]},
-      url          = {https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal},
+      doi          = {Pending (Will be updated via Zenodo)},
+      url          = {https://github.com/cristhianyaranganana-arch/VinaMetal},
       note         = {Fork of AutoDock Vina 1.2.7 with native metal coordination}
     }
 

@@ -5,7 +5,7 @@ type: software
 version: 1.0.0
 date-released: "2026-10-19"
 license: Apache-2.0
-repository-code: "https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal"
+repository-code: "https://github.com/cristhianyaranganana-arch/VinaMetal"
 keywords:
   - molecular docking
   - metalloprotein
@@ -13,10 +13,10 @@ keywords:
   - AutoDock Vina
   - C++
 authors:
-  - name: "[PLACEHOLDER: NOMBRE COMPLETO]"
+  - name: "Christian Yaranga Nana"
     email: cristhianyaranganana@gmail.com
     orcid: "https://orcid.org/0009-0000-5539-0526"
-    affiliation: "[INSTITUCIÓN]"
+    affiliation: "Universidad Norbert Wiener"
 abstract: >-
   VinaMetal is a fork of AutoDock Vina 1.2.7 that integrates AutoDock 4 metal
   coordination physics into the native scoring function: metal-specific 12-6

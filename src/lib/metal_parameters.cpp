@@ -21,6 +21,7 @@
 */
 
 #include "metal_parameters.h"
+#include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <cmath>
@@ -166,9 +167,10 @@ void metal_parameters::load_json(const std::string& path) {
         boost::property_tree::read_json(in, pt);
         VINA_FOR_IN(i, ions) {
             metal_ion& m = ions[i];
-            const boost::property_tree::ptree& node = pt.get_child(m.name,
-                boost::property_tree::ptree());
-            if (node.empty()) continue;
+            boost::optional<boost::property_tree::ptree&> node_opt =
+                pt.get_child_optional(m.name);
+            if (!node_opt) continue;
+            const boost::property_tree::ptree& node = *node_opt;
             m.Rii     = node.get<fl>("Rii", m.Rii);
             m.epsii   = node.get<fl>("epsii", m.epsii);
             m.vol     = node.get<fl>("vol", m.vol);

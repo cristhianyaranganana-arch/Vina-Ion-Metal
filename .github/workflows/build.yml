@@ -17,25 +17,8 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: Linux-x64
-            bin_dir: build
-            config_args: ""
-            build_args: ""
-            ctest_args: ""
-          - os: windows-latest
-            platform: Windows-x64
-            bin_dir: build/Release
-            config_args: "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
-            build_args: "--config Release"
-            ctest_args: "-C Release"
-
+    name: Linux-x64
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -43,35 +26,35 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install Boost (Linux)
-        if: runner.os == 'Linux'
+      - name: Set version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="1.0.0"
+          fi
+          echo "VINA_VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Install Boost
         run: sudo apt-get update && sudo apt-get install -y libboost-all-dev
 
-      - name: Install Boost (Windows)
-        if: runner.os == 'Windows'
-        run: "& \"$env:VCPKG_INSTALLATION_ROOT\\vcpkg.exe\" install boost-system boost-thread boost-serialization boost-filesystem boost-program-options --triplet x64-windows"
-
-      - name: Configure (Linux)
-        if: runner.os == 'Linux'
+      - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
-      - name: Configure (Windows)
-        if: runner.os == 'Windows'
-        run: cmake -S . -B build ${{ matrix.config_args }}
-
       - name: Build
-        run: cmake --build build --parallel ${{ matrix.build_args }}
+        run: cmake --build build --parallel
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure ${{ matrix.ctest_args }}
+        run: ctest --test-dir build --output-on-failure
 
       - name: Package
-        run: python scripts/package_release.py --build-dir ${{ matrix.bin_dir }} --platform ${{ matrix.platform }} --version 1.0 --output-dir dist
+        run: python scripts/package_release.py --build-dir build --platform Linux-x64 --version ${{ env.VINA_VERSION }} --output-dir dist
 
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
-          name: VinaMetal-${{ matrix.platform }}
+          name: VinaMetal-Linux-x64
           path: dist/*
           if-no-files-found: error
 
@@ -83,8 +66,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download packages
         uses: actions/download-artifact@v4
         with:

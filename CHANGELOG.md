@@ -68,6 +68,13 @@ are manual, Cu²⁺ and Ni²⁺ parameters are placeholders, the receptor is rig
 occupancy counting uses Vina donor typing, and the metal weights are not yet
 benchmark-calibrated.
 
+### Release assets
+
+- Linux x86-64 binary archive and examples archive are built and published by
+  GitHub Actions on each `v*` tag.
+- Prebuilt Windows binary is **deferred** for this release; Windows users can
+  build from source.
+
 ### Licensing
 
 - Source code: Apache License 2.0. The original Scripps Research Institute
@@ -75,5 +82,5 @@ benchmark-calibrated.
 - `data/ad4_reference/`: GNU General Public License v2.0 (see
   `data/ad4_reference/COPYING`).
 
-[Unreleased]: https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/PLACEHOLDER-GITHUB-USER/VinaMetal/releases/tag/v1.0.0
+[Unreleased]: https://github.com/cristhianyaranganana-arch/VinaMetal/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/cristhianyaranganana-arch/VinaMetal/releases/tag/v1.0.0

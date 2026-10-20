@@ -21,27 +21,21 @@ If Boost is installed in a non-standard location, pass
 
 ## Windows
 
-A local build requires Visual Studio (C++ workload), CMake and Boost. The CI
-workflow uses vcpkg:
+A local build on Windows is possible with Visual Studio, CMake and a full Boost
+installation, but it is **not officially supported in this release** and no
+prebuilt Windows binary is provided. The CI workflow currently builds and
+releases **Linux x86-64 assets only**.
 
-    git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-    C:\vcpkg\bootstrap-vcpkg.bat
-    C:\vcpkg\vcpkg install boost-system boost-thread boost-serialization ^
-        boost-filesystem boost-program-options --triplet x64-windows
+If you want to experiment on Windows, install the Boost libraries your compiler
+can find and run:
 
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ^
-          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     cmake --build build --config Release -j
     ctest --test-dir build -C Release --output-on-failure
-
-The official Windows binary is produced by GitHub Actions on each tagged
-release; no binary is stored in the git tree.
 
 ## Tests
 
     ctest --test-dir build --output-on-failure
-
-On a multi-configuration generator (Visual Studio), add `-C Release`.
 
 - `metal_gradient`: finite-difference check of the analytic metal gradients.
 - `cn_detection`: runs `--score_only` on the two bundled examples and checks
@@ -61,15 +55,14 @@ are not read at runtime. Overrides can be supplied with `--metal_params`; see
 
 ## Building release assets
 
-`scripts/package_release.py` assembles the platform archive and the examples
-archive from a build directory:
+`scripts/package_release.py` assembles the Linux platform archive and the
+examples archive from a build directory:
 
     python3 scripts/package_release.py \
         --build-dir build --platform Linux-x64 --version 1.0
 
 It writes `dist/VinaMetal-v1.0-Linux-x64.tar.gz`,
 `dist/VinaMetal-v1.0-Linux-x64.zip` and `dist/VinaMetal-v1.0-Examples.zip`, and
-prints their SHA-256 hashes. On Windows use `--platform Windows-x64` and
-`--build-dir build/Release`. The archives contain the executables, examples,
+prints their SHA-256 hashes. The archives contain the executables, examples,
 documentation, parameter data and license files; source code is distributed
 through the repository.
