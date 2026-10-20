@@ -104,7 +104,7 @@ See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for the complete list.
       author       = {Christian Yaranga Nana},
       year         = {2026},
       version      = {1.0.0},
-      doi          = {Pending (Will be updated via Zenodo)},
+      doi          = {10.5281/zenodo.23499212},
       url          = {https://github.com/cristhianyaranganana-arch/VinaMetal},
       note         = {Fork of AutoDock Vina 1.2.7 with native metal coordination}
     }
