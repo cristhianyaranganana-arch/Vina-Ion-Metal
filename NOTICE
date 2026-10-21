@@ -1,0 +1,38 @@
+NOTICE
+======
+
+Vina-Ion-Metal
+Copyright (c) 2026, Christian Yaranga Nana (Universidad Norbert Wiener)
+Licensed under the Apache License, Version 2.0.
+
+This product includes software developed as part of the following projects:
+
+1. Vina-Ion-Metal (this repository)
+   https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal
+   Copyright (c) 2026, Christian Yaranga Nana.
+   Metal coordination scoring module (metal_scoring, metal_parameters),
+   receptor preparation pipeline, and the fixes of the 2026 technical audit.
+
+2. VinaMetal 1.0.0
+   https://github.com/cristhianyaranganana-arch/VinaMetal
+   Copyright (c) 2024-2026, Christian Yaranga Nana.
+   Vina-Ion-Metal is the corrected successor of VinaMetal; the metal
+   coordination physics (AD4 12-6 pair potential, coordination-number
+   penalty, geometry bonus with analytic gradients, occupancy detection)
+   originates in that work and is preserved with modifications.
+
+3. AutoDock Vina 1.2.7
+   https://github.com/ccsb-scripps/AutoDock-Vina
+   Copyright (c) 2006-2010, The Scripps Research Institute.
+   The docking engine, scoring framework and command line interface are
+   derived from AutoDock Vina, licensed under the Apache License, Version 2.0.
+
+4. AutoDock 4 / AutoDockTools parameter reference data
+   data/ad4_reference/ contains AutoDock 4 parameter files distributed under
+   the GNU General Public License v2.0 (see data/ad4_reference/COPYING).
+
+Example inputs are derived from RCSB Protein Data Bank entries 4FIY
+(galactofuranosyltransferase GlfT2, Mycobacterium tuberculosis), 1s63 and 1iep.
+
+The name "Vina-Ion-Metal" and the metal coordination modules are not
+affiliated with or endorsed by The Scripps Research Institute.

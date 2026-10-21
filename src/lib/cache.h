@@ -41,7 +41,7 @@
 
 struct precalculate;
 struct model;
-struct metal_scoring; // VinaMetal
+struct metal_scoring; // Vina-Ion-Metal
 
 struct cache : public igrid {
 public:
@@ -50,7 +50,7 @@ public:
         fl eval      (const model& m, fl v) const; // needs m.coords // clean up
         fl eval_intra(      model& m, fl v) const; // needs m.coords // clean up
         fl eval_deriv(      model& m, fl v) const; // needs m.coords, sets m.minus_forces // clean up
-        // VinaMetal: attach the conditional metal coordination scoring (not serialized)
+        // Vina-Ion-Metal: attach the conditional metal coordination scoring (not serialized)
         void set_metal_scoring(const metal_scoring* ms) { m_metal_scoring = ms; }
     grid_dims gd() const { return m_gd; }
     vec corner1() const { vec corner(m_gd[0].begin, m_gd[1].begin, m_gd[2].begin); return corner; }
@@ -66,7 +66,7 @@ private:
         grid_dims m_gd;
         fl m_slope; // does not get (de-)serialized
         std::vector<grid> m_grids;
-        const metal_scoring* m_metal_scoring; // VinaMetal (not serialized)
+        const metal_scoring* m_metal_scoring; // Vina-Ion-Metal (not serialized)
 };
 
 #endif

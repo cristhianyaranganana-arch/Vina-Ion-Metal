@@ -1,11 +1,12 @@
 # Validation logs
 
 These logs are the raw output of the runs summarized in the repository README.
-They were produced with the VinaMetal 1.0.0 binary before the CMake build was
-added to the repository; the scoring code is the same. Commands, seeds and box
-sizes are recorded inside each log.
+They were produced with the VinaMetal 1.0.0 binary (predecessor of
+Vina-Ion-Metal) before the CMake build was added to the repository; the
+scoring code is the same. Commands, seeds and box sizes are recorded inside
+each log.
 
-| File | System | Result |
+| File | System | Result (VinaMetal 1.0.0 defaults) |
 |---|---|---|
 | `glft2_cnfix.log` | GlfT2, PDB 4FIY chain A, Mn²⁺ | CN target 2 (4 receptor donors); mode 3 reproduces the crystal pose with 0.95 Å RMSD. |
 | `1s63_cnfix.log` | PDB 1s63, Zn²⁺ | CN target 1 (3 receptor donors); top-1 pose has 0.33 Å RMSD. |
@@ -13,6 +14,12 @@ sizes are recorded inside each log.
 
 ## Notes
 
+- **Version caveat.** The metalloprotein numbers above were obtained with
+  VinaMetal 1.0.0 defaults (always-strict CN penalty, weights 1.0/1.0/1.0).
+  Vina-Ion-Metal 1.0.0 changes the CN regime to lenient-by-default and the
+  weights to 1.2/0.5/1.0, so re-running `examples/*/config.txt` may produce
+  different rankings. The no-metal regression is unaffected (CI-enforced,
+  byte-identical against stock Vina 1.2.7).
 - RMSD values are heavy-atom, symmetry-aware, computed with RDKit `GetBestRMS`
   against the crystal ligand. They are not printed by Vina and are reported in
   the log header comment or in the example READMEs.

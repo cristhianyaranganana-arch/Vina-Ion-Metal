@@ -1,9 +1,10 @@
 /*
 
-  VinaMetal - metal_parameters module
+  Vina-Ion-Metal - metal_parameters module
 
-  Copyright (c) 2024, VinaMetal developers
-  Based on AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
+  Copyright (c) 2026, Vina-Ion-Metal developers
+  Based on VinaMetal (Copyright (c) 2024-2026, Christian Yaranga Nana)
+  and AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
   Licensed under the Apache License, Version 2.0.
 
   Metal ion parameter table for coordination-aware docking.
@@ -69,7 +70,11 @@ struct metal_ion {
     fl d_S;                    // mean metal-donor distance to S (Angstrom)
     fl cn_cutoff;              // coordination shell radius (Angstrom)
     fl geom_bonus_max;         // max geometric bonus per donor pair (kcal/mol), bounded
-    // TODO(AD4Zn): port directional Zn parameters from AD4Zn.dat (nbp_r_eps) for Zn2+.
+    // TODO(AD4Zn): port directional Zn parameters from the upstream AutoDock
+    // repository AD4Zn.dat (nbp_r_eps, TZ/ZA pseudoatoms) for Zn2+.
+    // Vina-Ion-Metal (audit #8): the stale local copy of "AD4Zn.dat" that
+    // shipped with VinaMetal 1.0.0 was removed; it was a mislabeled copy of
+    // AD4.1_bound.dat, not the real AD4Zn parameter set.
 
     fl radius() const { return Rii * 0.5; } // AD4 convention: Rii is the like-pair sum
 };
@@ -96,6 +101,13 @@ struct metal_parameters {
     // selects among entries of the same element (Fe=2/3).
     sz index_for_ad_type(sz ad_type) const;
     bool has_oxidation_choice(const std::string& element) const; // elements with >1 entry
+
+    // Vina-Ion-Metal (audit #6/#7): strict --metal_oxidation validation support.
+    bool knows_element(const std::string& element) const;          // element in the table?
+    std::vector<int> oxidation_states_for(const std::string& element) const; // e.g. Fe -> {2,3}
+    // Exact entry for the requested state, or ions.size() if none exists
+    // (fallback diagnostic in Vina::check_receptor_metals).
+    sz index_for_ad_type_with_state(sz ad_type, int state) const;
 
     std::vector<metal_ion> ions;
 

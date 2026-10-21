@@ -1,5 +1,10 @@
 name: build
 
+# Vina-Ion-Metal (audit #14 + workflow fix): the VinaMetal 1.0.0 workflow had a
+# corrupted trigger (`branches: ain]`) that silently disabled CI on push/PR.
+# Triggers are now valid, the build remains Linux x86-64 with static Boost, and
+# the byte-identical regression test downloads the official AutoDock Vina 1.2.7
+# reference binary (audit #13).
 on:
   push:
     branches: [main]
@@ -45,7 +50,17 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
+      - name: Download reference AutoDock Vina 1.2.7 (regression test)
+        run: |
+          mkdir -p reference
+          curl -fL -o reference/vina_1.2.7 \
+            https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.7/vina_1.2.7_linux_x86_64
+          chmod +x reference/vina_1.2.7
+          ./reference/vina_1.2.7 --version
+
       - name: Test
+        env:
+          VINA_REFERENCE_BIN: ${{ github.workspace }}/reference/vina_1.2.7
         run: ctest --test-dir build --output-on-failure
 
       - name: Package
@@ -54,7 +69,7 @@ jobs:
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
-          name: VinaMetal-Linux-x64
+          name: Vina-Ion-Metal-Linux-x64
           path: dist/*
           if-no-files-found: error
 

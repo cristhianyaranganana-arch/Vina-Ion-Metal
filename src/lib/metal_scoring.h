@@ -1,9 +1,10 @@
 /*
 
-  VinaMetal - metal_scoring module
+  Vina-Ion-Metal - metal_scoring module
 
-  Copyright (c) 2024, VinaMetal developers
-  Based on AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
+  Copyright (c) 2026, Vina-Ion-Metal developers
+  Based on VinaMetal (Copyright (c) 2024-2026, Christian Yaranga Nana)
+  and AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
   Licensed under the Apache License, Version 2.0.
 
   Coordination-aware scoring terms, conditional on the presence of parametrized
@@ -18,6 +19,9 @@
        standard Vina potentials to avoid double counting.
    (b) coordination-number penalty: smooth differentiable count of donors in
        the coordination shell, penalizing deviation from the ideal CN.
+       In the default LENIENT mode only over-coordination is penalized
+       (smooth softplus hinge, C-infinity); in STRICT mode (--metal_cn_strict)
+       any deviation from the CN target is penalized (pure quadratic).
    (c) coordination geometry bonus: bounded bonus for donor pairs whose
        M-L-L' angle matches the preferred geometry (tetrahedral 109.47 deg,
        octahedral / square-planar 90 and 180 deg).
@@ -80,6 +84,8 @@ struct metal_scoring {
     static bool is_coordination_donor_type(sz xs); // XS-type variant (map population)
     // True if this movable donor x rigid atom pair must be handled by metal_scoring.
     bool owns_pair(const atom& movable, const atom& rigid) const;
+    // Number of parametrized metal ions found in the last prepared model.
+    sz num_metal_ions() const { return m_cache.metal_atoms.size(); }
 
 private:
     bool m_enabled;
@@ -101,6 +107,9 @@ private:
         szv donors;      // indices into m.atoms (movable)
         std::vector<int> occupied_cn; // receptor donors already bound to each metal
         std::vector<int> target_cn;   // effective ligand CN target per metal
+        // Vina-Ion-Metal (audit #10): typing-independent geometric donor count,
+        // used for robustness diagnostics in report_cn_targets().
+        std::vector<int> geometric_cn;
         model_cache() : prepared(false), key(NULL), n_grid_atoms(0), n_movable(0) {}
     };
     mutable model_cache m_cache;

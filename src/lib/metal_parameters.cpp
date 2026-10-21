@@ -1,9 +1,10 @@
 /*
 
-  VinaMetal - metal_parameters module
+  Vina-Ion-Metal - metal_parameters module
 
-  Copyright (c) 2024, VinaMetal developers
-  Based on AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
+  Copyright (c) 2026, Vina-Ion-Metal developers
+  Based on VinaMetal (Copyright (c) 2024-2026, Christian Yaranga Nana)
+  and AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
   Licensed under the Apache License, Version 2.0.
 
   Sources of the built-in values (DO NOT INVENT - rule of the porting):
@@ -18,6 +19,11 @@
        types"): values below are PLACEHOLDER-UNVALIDATED estimates and must be
        refined or overridden through --metal_params.
 
+  Vina-Ion-Metal note (audit #8): the orphan data/AD4Zn.dat file of VinaMetal
+  was removed. The full AD4Zn directional model (TZ/ZA pseudoatoms) is NOT
+  ported; if porting it, take the parameters from the upstream AutoDock
+  repository (AD4Zn.dat, Scripps), not from this tree.
+
 */
 
 #include "metal_parameters.h"
@@ -25,6 +31,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <cmath>
+#include <algorithm>
 #include <fstream>
 
 metal_parameters::metal_parameters() {
@@ -133,6 +140,9 @@ void metal_parameters::add_defaults() {
 sz metal_parameters::index_for_ad_type(sz ad_type) const {
     // Pick the entry matching ad_type, honoring the user-selected oxidation
     // state for elements with more than one entry (default: +2).
+    // NOTE (audit #7): this is a hot path (is_metal_ion / owns_pair) and stays
+    // SILENT. The receptor-level diagnostic for oxidation-state fallbacks is
+    // reported by Vina::check_receptor_metals() via oxidation_states_for().
     sz best = ions.size();
     VINA_FOR(i, ions.size()) {
         const metal_ion& m = ions[i];
@@ -145,6 +155,35 @@ sz metal_parameters::index_for_ad_type(sz ad_type) const {
             return i;
         }
         if (best == ions.size()) best = i; // fallback: first match
+    }
+    return best;
+}
+
+std::vector<int> metal_parameters::oxidation_states_for(const std::string& element) const {
+    // Distinct formal charges parametrized for the element (sorted).
+    std::vector<int> states;
+    VINA_FOR(i, ions.size())
+        if (ions[i].element == element) states.push_back(ions[i].formal_charge);
+    std::sort(states.begin(), states.end());
+    states.erase(std::unique(states.begin(), states.end()), states.end());
+    return states;
+}
+
+bool metal_parameters::knows_element(const std::string& element) const {
+    VINA_FOR(i, ions.size())
+        if (ions[i].element == element) return true;
+    return false;
+}
+
+sz metal_parameters::index_for_ad_type_with_state(sz ad_type, int state) const {
+    // Exact match honoring the requested oxidation state, or size() if the
+    // state has no entry (used by the fallback diagnostic, audit #7).
+    sz best = ions.size();
+    VINA_FOR(i, ions.size()) {
+        const metal_ion& m = ions[i];
+        if (m.ad_type != ad_type) continue;
+        if (best == ions.size()) best = i;
+        if (m.formal_charge == state) return i;
     }
     return best;
 }

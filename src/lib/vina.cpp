@@ -85,7 +85,7 @@ void Vina::set_receptor(const std::string& rigid_name, const std::string& flex_n
 
         m_model = m_receptor;
         m_receptor_initialized = true;
-        // VinaMetal: detect parametrized metal ions and warn about missing oxidation states
+        // Vina-Ion-Metal: detect parametrized metal ions and warn about missing oxidation states
         check_receptor_metals();
         // If we are reading another receptor we should not consider the ligand and the map as initialized anymore
         m_ligand_initialized = false;
@@ -260,7 +260,7 @@ void Vina::set_vinardo_weights(double weight_gauss1, double weight_repulsion,
         }
 }
 
-// --------------------- VinaMetal implementation ---------------------
+// --------------------- Vina-Ion-Metal implementation ---------------------
 
 void Vina::set_metal_weights(double weight_metal_vdw, double weight_metal_cn,
                              double weight_metal_geom, bool metal_cn_strict) {
@@ -278,6 +278,10 @@ void Vina::set_metal_params(const std::string& path) {
 
 void Vina::set_metal_oxidation(const std::string& spec) {
         // Format: "Fe=3" or comma-separated "Fe=3,Cu=1"
+        // Vina-Ion-Metal (audit #6): strict validation. Each pair must be
+        // Element=IntegerState with a known metal element; non-numeric values
+        // are a hard error (std::atoi's silent 0 was indistinguishable from
+        // "not specified" and silently selected the +2 entry).
         std::vector<std::string> parts;
         boost::split(parts, spec, boost::is_any_of(","));
         VINA_FOR_IN(i, parts) {
@@ -289,7 +293,34 @@ void Vina::set_metal_oxidation(const std::string& spec) {
                         std::cerr << "ERROR: --metal_oxidation expects 'Element=charge' pairs (e.g. Fe=3), got '" << p << "'\n";
                         exit(EXIT_FAILURE);
                 }
-                m_metal_parameters.set_oxidation_state(boost::trim_copy(kv[0]), std::atoi(kv[1].c_str()));
+                const std::string element = boost::trim_copy(kv[0]);
+                const std::string value   = boost::trim_copy(kv[1]);
+                if (element.empty() || element.size() > 2) {
+                        std::cerr << "ERROR: --metal_oxidation: '" << element << "' is not a valid element symbol\n";
+                        exit(EXIT_FAILURE);
+                }
+                if (!m_metal_parameters.knows_element(element)) {
+                        std::cerr << "ERROR: --metal_oxidation: metal '" << element
+                                  << "' has no parametrized entry (supported: Zn, Mg, Ca, Mn, Fe, Cu, Ni)\n";
+                        exit(EXIT_FAILURE);
+                }
+                // strict integer parse: whole string must be consumed
+                long state = 0;
+                try {
+                        std::size_t pos = 0;
+                        state = std::stol(value, &pos);
+                        if (pos != value.size()) throw std::invalid_argument("trailing characters");
+                } catch (...) {
+                        std::cerr << "ERROR: --metal_oxidation: '" << value << "' in '" << p
+                                  << "' is not a valid integer oxidation state\n";
+                        exit(EXIT_FAILURE);
+                }
+                if (state < 1 || state > 4) {
+                        std::cerr << "ERROR: --metal_oxidation: oxidation state " << state
+                                  << " for " << element << " is out of the supported range 1..4\n";
+                        exit(EXIT_FAILURE);
+                }
+                m_metal_parameters.set_oxidation_state(element, static_cast<int>(state));
         }
         m_metal_scoring_attached = false;
 }
@@ -315,32 +346,71 @@ void Vina::refresh_metal_scoring() {
 void Vina::check_receptor_metals() {
         if (m_sf_choice == SF_AD42 || !m_metals_enabled) return;
         std::map<std::string, int> counts;
+        std::map<std::string, int> unparametrized;
+        std::map<std::string, int> fallbacks; // Vina-Ion-Metal (audit #7)
         VINA_FOR(i, m_receptor.grid_atoms.size()) {
                 const atom& a = m_receptor.grid_atoms[i];
                 if (a.el != EL_TYPE_Met) continue;
                 sz idx = m_metal_parameters.index_for_ad_type(a.ad);
                 if (idx == m_metal_parameters.size()) {
-                        // metal without validated parameters (e.g. Co, Cd, Hg)
-                        std::cerr << "WARNING: VinaMetal found a metal ion without validated parameters (AD type index "
-                                  << a.ad << "); standard Vina interactions will be used for it.\n";
+                        // metal without validated parameters (e.g. Na, K, Co, Cd, Hg)
+                        unparametrized[a.ad == AD_TYPE_SIZE ? std::string("generic-Met") : std::string("AD-type-") + boost::lexical_cast<std::string>(a.ad)]++;
                         continue;
                 }
                 const metal_ion& ion = m_metal_parameters.ion(idx);
+                // Vina-Ion-Metal (audit #7): if a user-declared oxidation state has
+                // no parametrized entry, index_for_ad_type silently fell back to the
+                // first entry (Fe2+). Diagnose it here, once, at receptor load time.
+                if (m_metal_parameters.has_oxidation_choice(ion.element)) {
+                        int state = m_metal_parameters.get_oxidation_state(ion.element);
+                        if (state == 0) state = 2; // default
+                        if (m_metal_parameters.index_for_ad_type_with_state(a.ad, state)
+                            == m_metal_parameters.size()) {
+                                fallbacks[ion.element + "=" + boost::lexical_cast<std::string>(state)]++;
+                        }
+                }
                 counts[ion.element]++;
                 if (m_metal_parameters.has_oxidation_choice(ion.element)
                     && m_metal_parameters.get_oxidation_state(ion.element) == 0) {
-                        std::cerr << "WARNING: VinaMetal found " << ion.element
+                        std::cerr << "WARNING: Vina-Ion-Metal found " << ion.element
                                   << " ion(s) but the oxidation state was not specified with --metal_oxidation;\n"
                                   << "         defaulting to the +2 entry ("
-                                  << ion.name << ", PLACEHOLDER pending oxidation-specific calibration).\n";
+                                  << ion.name << ", pending oxidation-specific calibration).\n";
                         m_metal_parameters.set_oxidation_state(ion.element, 2);
                 }
         }
+        for (std::map<std::string, int>::const_iterator it = unparametrized.begin();
+             it != unparametrized.end(); ++it) {
+                std::cerr << "WARNING: Vina-Ion-Metal found metal ion(s) of '" << it->first
+                          << "' without validated coordination parameters (x" << it->second << ");\n"
+                          << "         standard Vina interactions will be used for them.\n"
+                          << "         Supported ions: Zn, Mg, Ca, Mn, Fe, Cu, Ni. Re-prepare the\n"
+                          << "         receptor with scripts/prepare_receptor.py if this is unexpected.\n";
+        }
+        for (std::map<std::string, int>::const_iterator it = fallbacks.begin();
+             it != fallbacks.end(); ++it) {
+                std::string element = it->first.substr(0, it->first.find('='));
+                std::vector<int> states = m_metal_parameters.oxidation_states_for(element);
+                std::string states_str;
+                for (std::size_t s = 0; s < states.size(); ++s) {
+                        if (s) states_str += ", ";
+                        states_str += "+" + boost::lexical_cast<std::string>(states[s]);
+                }
+                std::cerr << "WARNING: Vina-Ion-Metal: no parameters for " << it->first
+                          << "; falling back to the first entry for " << element
+                          << " (parametrized states: " << states_str << ").\n";
+        }
         if (!counts.empty() && m_verbosity > 0) {
-                std::cout << "VinaMetal: parametrized metal ions in receptor:";
+                std::cout << "Vina-Ion-Metal: parametrized metal ions in receptor:";
                 for (std::map<std::string, int>::iterator it = counts.begin(); it != counts.end(); ++it)
                         std::cout << " " << it->first << "(x" << it->second << ")";
                 std::cout << " - coordination scoring is ACTIVE\n";
+                std::cout << "Vina-Ion-Metal: NOTE: default metal weights are provisional "
+                             "heuristics (v1.0: vdw " << m_weight_metal_vdw
+                          << ", cn " << m_weight_metal_cn << ", geom " << m_weight_metal_geom
+                          << ");\n"
+                          << "         override with --weight_metal_vdw/--weight_metal_cn/--weight_metal_geom "
+                             "for calibrated campaigns.\n";
         }
 }
 
@@ -348,7 +418,7 @@ void Vina::metal_breakdown(fl& e_vdw, fl& e_cn, fl& e_geom, int& n_contacts) con
         e_vdw = 0; e_cn = 0; e_geom = 0; n_contacts = 0;
         if (m_metal_scoring.enabled()) m_metal_scoring.eval_breakdown(m_model, e_vdw, e_cn, e_geom, n_contacts);
 }
-// ------------------- end VinaMetal implementation -------------------
+// ------------------- end Vina-Ion-Metal implementation -------------------
 
 void Vina::set_ad4_weights(double weight_ad4_vdw , double weight_ad4_hb,
                                                    double weight_ad4_elec, double weight_ad4_dsolv,
@@ -456,7 +526,7 @@ void Vina::compute_vina_maps(double center_x, double center_y, double center_z, 
         // Store it now in Vina object because of non_cache
         m_precalculated_sf = precalculated_sf;
 
-        // VinaMetal: rebuild the metal coordination scoring and attach it to the cache
+        // Vina-Ion-Metal: rebuild the metal coordination scoring and attach it to the cache
         // BEFORE populating the maps (metal ions are excluded from donor-type maps)
         refresh_metal_scoring();
         if (m_metal_scoring.enabled()) {
@@ -497,8 +567,8 @@ void Vina::load_maps(std::string maps) {
                 cache grid(slope);
                 grid.read(maps);
                 done(m_verbosity, 0);
-                // VinaMetal: attach the metal coordination scoring to the map cache
-                // NOTE: this assumes the maps were generated by VinaMetal (metal ions
+                // Vina-Ion-Metal: attach the metal coordination scoring to the map cache
+                // NOTE: this assumes the maps were generated by Vina-Ion-Metal (metal ions
                 // excluded from donor-type maps). See docs/LIMITATIONS.
                 refresh_metal_scoring();
                 if (m_metal_scoring.enabled()) m_metal_scoring.prepare(m_model); // eager caches

@@ -12,11 +12,11 @@ Redocking example for a zinc metalloprotein.
 
 ## Expected behavior
 
-VinaMetal detects the Zn2+ automatically and counts the rigid receptor donors
+Vina-Ion-Metal detects the Zn2+ automatically and counts the rigid receptor donors
 already bound to it (three donors within the 3.0 Å coordination cutoff). The
 effective ligand CN target is therefore `4 - 3 = 1`, and the log reports:
 
-    VinaMetal: Zn2+ CN target = ideal 4 - receptor-bound 3 = 1
+    Vina-Ion-Metal: Zn2+ CN target = ideal 4 - receptor-bound 3 = 1
 
 In the validation run, the top-ranked pose had a heavy-atom symmetry-aware RMSD
 of 0.33 Å against the crystal ligand.

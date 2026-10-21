@@ -87,7 +87,7 @@ fl cache::eval(const model& m, fl v) const { // needs m.coords
                 const grid& g = m_grids[t];
                 e += g.evaluate(m.coords[i], m_slope, v);
         }
-        // VinaMetal: add the conditional metal coordination energy (distance-only
+        // Vina-Ion-Metal: add the conditional metal coordination energy (distance-only
         // replacement + CN penalty + geometry bonus) for movable donor atoms.
         if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
         return e;
@@ -127,7 +127,7 @@ fl cache::eval_intra(model& m, fl v) const {
                 const grid& g = m_grids[t];
                 e += g.evaluate(m.coords[i], m_slope, v);
         }
-        // VinaMetal: flex-rigid metal contributions (same conditional terms)
+        // Vina-Ion-Metal: flex-rigid metal contributions (same conditional terms)
         if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
         return e;
 }
@@ -168,7 +168,7 @@ fl cache::eval_deriv(model& m, fl v) const { // needs m.coords, sets m.minus_for
                 e += g.evaluate(m.coords[i], m_slope, v, deriv);
                 m.minus_forces[i] = deriv;
         }
-        // VinaMetal: metal coordination energy + analytic gradients, accumulated
+        // Vina-Ion-Metal: metal coordination energy + analytic gradients, accumulated
         // into m.minus_forces with the standard Vina convention (flows to BFGS
         // through model::eval_deriv -> ligands/flex derivative).
         if (m_metal_scoring) e += m_metal_scoring->eval(m, &m.minus_forces);
@@ -507,10 +507,16 @@ void cache::populate(const model &m, const precalculate &p, const szv &atom_type
                                                 VINA_FOR_IN(j, needed) {
                                                         const sz t2 = needed[j];
                                                         assert(t2 < nat);
-                                                        // VinaMetal: metal ions must not contribute to the donor-type
-                                                        // maps; their interaction is added directly in eval/eval_deriv
-                                                        // (replaced by the metal-specific potential) to avoid double counting.
-                                                        if (m_metal_scoring && m_metal_scoring->enabled() && a.el == EL_TYPE_Met
+                                                        // Vina-Ion-Metal: parametrized metal ions must not
+                                                        // contribute to the donor-type maps; their interaction
+                                                        // is added directly in eval/eval_deriv (replaced by the
+                                                        // metal-specific potential) to avoid double counting.
+                                                        // FIX (audit #1): only PARAMETRIZED ions are excluded.
+                                                        // Unparametrized metals (Na, K, Co, Cd, Hg, ...) fall
+                                                        // back to standard Vina map treatment, preserving
+                                                        // byte-identical scoring against stock Vina 1.2.7.
+                                                        if (m_metal_scoring && m_metal_scoring->enabled()
+                                                            && m_metal_scoring->is_metal_ion(a)
                                                             && metal_scoring::is_coordination_donor_type(t2))
                                                                 continue;
                                                         const sz type_pair_index = triangular_matrix_index_permissive(nat, t1, t2);

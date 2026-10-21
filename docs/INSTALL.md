@@ -1,6 +1,6 @@
 # Installation
 
-VinaMetal is a C++11 project. The only external dependency is Boost (≥ 1.65)
+Vina-Ion-Metal is a C++11 project. The only external dependency is Boost (≥ 1.65)
 with the `system`, `thread`, `serialization`, `filesystem` and
 `program_options` libraries.
 
@@ -14,7 +14,14 @@ Tested on Ubuntu 22.04 with GCC 11.4 and Boost 1.74.
     ctest --test-dir build --output-on-failure
 
 The executables are `build/vina` and `build/vina_split`. The binary reports its
-version as `AutoDock Vina v1.0.0`.
+version as `Vina-Ion-Metal v1.0.0 (based on AutoDock Vina 1.2.7)`.
+
+**Static Boost by default (audit #12).** Source builds now prefer static Boost
+libraries so the resulting binary is portable across machines. If only dynamic
+libraries are available, CMake falls back automatically with a warning; you can
+also force it:
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBoost_USE_STATIC_LIBS=OFF
 
 If Boost is installed in a non-standard location, pass
 `-DBOOST_ROOT=/path/to/boost` to CMake.
@@ -37,14 +44,22 @@ can find and run:
 
     ctest --test-dir build --output-on-failure
 
-- `metal_gradient`: finite-difference check of the analytic metal gradients.
+- `metal_gradient`: finite-difference check of the analytic metal gradients,
+  in both lenient and strict CN modes.
 - `cn_detection`: runs `--score_only` on the two bundled examples and checks
   the automatically adjusted CN target.
+- `unparametrized_metal` (new): guards the grid over-exclusion fix — a
+  receptor containing an unparametrized metal (Na⁺) must score identically
+  with `--metals auto` and `--metals off`.
+- `regression_no_metal`: byte-identical `--local_only` comparison against
+  unmodified AutoDock Vina 1.2.7. It is part of CTest and locates the
+  reference binary through the `VINA_REFERENCE_BIN` environment variable:
 
-The byte-identical no-metal regression needs an unmodified AutoDock Vina 1.2.7
-binary:
+      export VINA_REFERENCE_BIN=/path/to/vina_1.2.7
+      ctest --test-dir build --output-on-failure
 
-    tests/test_regression_no_metal.sh build/vina /path/to/vina_original_1.2.7
+  Without a reference binary the test SKIPS with an explanatory message (the
+  CI downloads the official reference so it always runs there).
 
 ## Runtime data
 
@@ -61,8 +76,8 @@ examples archive from a build directory:
     python3 scripts/package_release.py \
         --build-dir build --platform Linux-x64 --version 1.0
 
-It writes `dist/VinaMetal-v1.0-Linux-x64.tar.gz`,
-`dist/VinaMetal-v1.0-Linux-x64.zip` and `dist/VinaMetal-v1.0-Examples.zip`, and
-prints their SHA-256 hashes. The archives contain the executables, examples,
-documentation, parameter data and license files; source code is distributed
-through the repository.
+It writes `dist/Vina-Ion-Metal-v1.0-Linux-x64.tar.gz`,
+`dist/Vina-Ion-Metal-v1.0-Linux-x64.zip` and
+`dist/Vina-Ion-Metal-v1.0-Examples.zip`, and prints their SHA-256 hashes. The
+archives contain the executables, examples, documentation, parameter data and
+license files; source code is distributed through the repository.

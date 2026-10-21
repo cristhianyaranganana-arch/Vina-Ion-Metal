@@ -76,7 +76,7 @@ fl non_cache::eval      (const model& m, fl v) const { // clean up
                         const atom& b = m.grid_atoms[j];
                         sz t2 = b.get(atom_type::XS);
                         if(t2 >= n) continue;
-                        // VinaMetal: donor-metal pairs are handled by the metal
+                        // Vina-Ion-Metal: donor-metal pairs are handled by the metal
                         // coordination potential, not by the standard tables
                         if (m_metal_scoring && m_metal_scoring->owns_pair(a, b)) continue;
                         vec r_ba; r_ba = adjusted_a_coords - b.coords; // FIXME why b-a and not a-b ?
@@ -89,7 +89,7 @@ fl non_cache::eval      (const model& m, fl v) const { // clean up
                 curl(this_e, v);
                 e += this_e + out_of_bounds_penalty;
         }
-        // VinaMetal: conditional metal coordination energy
+        // Vina-Ion-Metal: conditional metal coordination energy
         if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
         return e;
 }
@@ -158,7 +158,7 @@ fl non_cache::eval_deriv(      model& m, fl v) const { // clean up
                         const atom& b = m.grid_atoms[j];
                         sz t2 = b.get(atom_type::XS);
                         if(t2 >= n) continue;
-                        // VinaMetal: donor-metal pairs are handled by the metal
+                        // Vina-Ion-Metal: donor-metal pairs are handled by the metal
                         // coordination potential, not by the standard tables
                         if (m_metal_scoring && m_metal_scoring->owns_pair(a, b)) continue;
                         vec r_ba; r_ba = adjusted_a_coords - b.coords; // FIXME why b-a and not a-b ?
@@ -174,7 +174,7 @@ fl non_cache::eval_deriv(      model& m, fl v) const { // clean up
                 m.minus_forces[i] = deriv + out_of_bounds_deriv;
                 e += this_e + out_of_bounds_penalty;
         }
-        // VinaMetal: metal coordination energy + analytic gradients (flows to BFGS)
+        // Vina-Ion-Metal: metal coordination energy + analytic gradients (flows to BFGS)
         if (m_metal_scoring) e += m_metal_scoring->eval(m, &m.minus_forces);
         return e;
 }
@@ -231,7 +231,7 @@ fl non_cache::eval_intra(model& m, fl v) const { // clean up
                         const atom& b = m.grid_atoms[j];
                         sz t2 = b.get(atom_type::XS);
                         if(t2 >= n) continue;
-                        // VinaMetal: donor-metal pairs are handled by the metal
+                        // Vina-Ion-Metal: donor-metal pairs are handled by the metal
                         // coordination potential, not by the standard tables
                         if (m_metal_scoring && m_metal_scoring->owns_pair(a, b)) continue;
                         vec r_ba; r_ba = adjusted_a_coords - b.coords; // FIXME why b-a and not a-b ?
@@ -244,7 +244,7 @@ fl non_cache::eval_intra(model& m, fl v) const { // clean up
                 curl(this_e, v);
                 e += this_e + out_of_bounds_penalty;
         }
-        // VinaMetal: conditional metal coordination energy (flex-rigid)
+        // Vina-Ion-Metal: conditional metal coordination energy (flex-rigid)
         if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
         return e;
 }

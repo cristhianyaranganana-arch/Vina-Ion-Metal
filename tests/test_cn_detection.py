@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """End-to-end check of the automatic receptor-occupancy CN adjustment.
 
-Runs the actual VinaMetal binary with --score_only on the bundled examples and
+Runs the actual Vina-Ion-Metal binary with --score_only on the bundled examples and
 checks the logged CN target line produced by metal_scoring::report_cn_targets().
 
 Expected lines (recorded during validation):
@@ -46,7 +46,7 @@ def run_example(vina, root, name):
         raise AssertionError(
             f"{name}: vina exited with {result.returncode}\n{output[-2000:]}"
         )
-    match = re.search(r"VinaMetal: .*CN target.*", output)
+    match = re.search(r"Vina-Ion-Metal: .*CN target.*", output)
     if not match:
         raise AssertionError(f"{name}: no CN target line in output\n{output[-2000:]}")
     line = match.group(0)

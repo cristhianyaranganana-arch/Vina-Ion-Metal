@@ -1,9 +1,10 @@
 /*
 
-  VinaMetal - metal_scoring module
+  Vina-Ion-Metal - metal_scoring module
 
-  Copyright (c) 2024, VinaMetal developers
-  Based on AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
+  Copyright (c) 2026, Vina-Ion-Metal developers
+  Based on VinaMetal (Copyright (c) 2024-2026, Christian Yaranga Nana)
+  and AutoDock Vina (Copyright (c) 2006-2010, The Scripps Research Institute)
   Licensed under the Apache License, Version 2.0.
 
 */
@@ -18,10 +19,13 @@ const fl metal_vdw_cutoff = 8.0;    // Angstrom; matches Vina pair cutoff
 const fl metal_pair_cap   = 100000; // AD4-style cap (potentials.h ad4_vdw)
 const fl metal_cn_sigma   = 0.15;   // Angstrom; smoothness of CN sigmoid
 const fl metal_ang_sigma  = 0.12;   // cosine units; smoothness of angular bonus
+const fl metal_hinge_delta = 0.05;  // Vina-Ion-Metal: softness of the lenient CN hinge (audit #2)
 
 // Coordination donor set (XS typing, native Vina/Vinardo scoring).
 // AD4 reference set is NA/NS/OA/OS/SA/S/N - see MAPA_DE_PORTERIA.md section 4.
-// HD is excluded pending the full AD4Zn directional port (TODO).
+// HD is excluded pending the full AD4Zn directional port (TODO; see
+// docs/LIMITATIONS.md - the AD4Zn pseudoatom model is NOT ported; obtain the
+// original parameters from the AutoDock4 repository if porting it).
 bool metal_scoring::is_coordination_donor_type(sz xs) {
     switch (xs) {
         case XS_TYPE_N_A:
@@ -75,6 +79,16 @@ inline fl cn_sigmoid(fl r, fl r_mid) {
 }
 inline fl cn_sigmoid_derivative(fl r, fl r_mid, fl s) {
     return -s * (1.0 - s) / metal_cn_sigma;
+}
+
+// Vina-Ion-Metal (audit #2): smooth softplus-style hinge approximating
+// max(0, x) while remaining C-infinity, so the LENIENT coordination-number
+// penalty (over-coordination only) keeps analytic gradients with no kinks.
+inline fl cn_hinge(fl x) {
+    return 0.5 * (x + std::sqrt(x * x + metal_hinge_delta * metal_hinge_delta));
+}
+inline fl cn_hinge_derivative(fl x) {
+    return 0.5 * (1.0 + x / std::sqrt(x * x + metal_hinge_delta * metal_hinge_delta));
 }
 
 // AD4 12-6 pair potential with the minimum placed at the coordination
@@ -159,16 +173,30 @@ fl metal_scoring::eval(const model& m, vecv* forces) const {
         // coordination sphere. Only the remaining sites are available to the
         // ligand, so the CN target is reduced accordingly (computed once in
         // build_cache; the receptor geometry is fixed).
+        //
+        // Vina-Ion-Metal (audit #2): --metal_cn_strict is now functional.
+        //   LENIENT (default): only over-coordination is penalized, through a
+        //     C-infinity softplus hinge h(cn - target); an incomplete ligand
+        //     shell (under-coordination) is not penalized.
+        //   STRICT (--metal_cn_strict): any deviation from the target is
+        //     penalized with the pure quadratic (cn - target)^2.
         const fl cn_target = m_cache.target_cn[k];
-        fl cn_dev = cn - cn_target;
-        e_total += m_w_cn * sqr(cn_dev);
+        const fl cn_dev = cn - cn_target;
+        const fl pen_dev = m_cn_strict ? cn_dev : cn_hinge(cn_dev);
+        e_total += m_w_cn * sqr(pen_dev);
         if (forces) {
+            // d(penalty)/d(cn):
+            //   strict : 2 * w * dev
+            //   lenient: 2 * w * h(dev) * h'(dev)   (chain rule through the hinge)
+            const fl dpen_dcn = m_cn_strict
+                ? 2.0 * m_w_cn * cn_dev
+                : 2.0 * m_w_cn * pen_dev * cn_hinge_derivative(cn_dev);
             VINA_FOR_IN(s, shell) {
                 const sz i = shell[s];
                 const fl r = shell_r[s];
                 const fl s_val = cn_sigmoid(r, r_mid);
                 const fl ds_dr = cn_sigmoid_derivative(r, r_mid, s_val);
-                const fl dE_dr = 2.0 * m_w_cn * cn_dev * ds_dr;
+                const fl dE_dr = dpen_dcn * ds_dr;
                 vec diff; diff = m.coords[i] - mc;
                 (*forces)[i] += (dE_dr / r) * diff;
             }
@@ -226,7 +254,8 @@ fl metal_scoring::eval(const model& m, vecv* forces) const {
                         // d(cos)/d(u) = v/(ru*rv) - cos * u/ru^2
                         vec dcos_du; dcos_du = (1.0 / (ru * rv)) * v - (cos_theta / (ru * ru)) * u;
                         vec dcos_dv; dcos_dv = (1.0 / (ru * rv)) * u - (cos_theta / (rv * rv)) * v;
-                        const fl dE_dcos = m_w_geom * ion.geom_bonus_max * s_i * s_j * df_dcos; // d(-bonus)/d(cos)
+                        // (audit #3: the dead intermediate dE_dcos was removed; the
+                        // gradients below use df_dcos directly)
                         // chain rule through the sigmoid distance weights:
                         // d s_i / d r_i < 0, d r_i / d coords_i = u/ru
                         const fl ds_i_dr = cn_sigmoid_derivative(shell_r[s1], r_mid, s_i);
@@ -262,6 +291,7 @@ void metal_scoring::build_cache(const model& m) const {
     m_cache.donors.clear();
     m_cache.occupied_cn.clear();
     m_cache.target_cn.clear();
+    m_cache.geometric_cn.clear();
 
     VINA_FOR(i, m.grid_atoms.size()) {
         const atom& a = m.grid_atoms[i];
@@ -277,17 +307,26 @@ void metal_scoring::build_cache(const model& m) const {
         // reduced by this occupancy.
         const metal_ion& ion = m_params->ion(idx);
         int occupied = 0;
+        // Vina-Ion-Metal (audit #10): typing-independent geometric count of
+        // N/O/S receptor atoms inside the same cutoff. Divergence between the
+        // two counts (bad typing, missing atoms, unusual residues) is reported
+        // by report_cn_targets() as a preparation-quality diagnostic.
+        int geometric = 0;
         VINA_FOR(j, m.grid_atoms.size()) {
             if (j == i) continue;
             const atom& donor = m.grid_atoms[j];
-            if (!is_coordination_donor(donor)) continue;
             vec diff; diff = donor.coords - a.coords;
-            if (sqr(diff) < sqr(ion.cn_cutoff)) ++occupied;
+            const bool in_shell = sqr(diff) < sqr(ion.cn_cutoff);
+            if (!in_shell) continue;
+            if (is_coordination_donor(donor)) ++occupied;
+            if (donor.el == EL_TYPE_N || donor.el == EL_TYPE_O || donor.el == EL_TYPE_S)
+                ++geometric;
         }
         int target = ion.ideal_cn - occupied;
         if (target < 0) target = 0;
         m_cache.occupied_cn.push_back(occupied);
         m_cache.target_cn.push_back(target);
+        m_cache.geometric_cn.push_back(geometric);
     }
 
     VINA_FOR(i, m.num_movable_atoms()) {
@@ -301,9 +340,27 @@ void metal_scoring::report_cn_targets(std::ostream& out) const {
     if (!m_enabled || !m_cache.prepared) return;
     VINA_FOR_IN(k, m_cache.metal_atoms) {
         const metal_ion& ion = m_params->ion(m_cache.metal_ions[k]);
-        out << "VinaMetal: " << ion.name << " CN target = ideal " << ion.ideal_cn
+        out << "Vina-Ion-Metal: " << ion.name << " CN target = ideal " << ion.ideal_cn
             << " - receptor-bound " << m_cache.occupied_cn[k]
             << " = " << m_cache.target_cn[k] << "\n";
+        // Vina-Ion-Metal (audit #10): preparation-quality diagnostics comparing
+        // the typed donor count used for scoring with a typing-independent
+        // geometric N/O/S count inside the same coordination cutoff.
+        const int occupied = m_cache.occupied_cn[k];
+        const int geometric = m_cache.geometric_cn[k];
+        if (occupied == 0 && geometric > 0) {
+            out << "Vina-Ion-Metal: WARNING: " << ion.name << " has " << geometric
+                << " N/O/S receptor atom(s) within " << ion.cn_cutoff
+                << " A but NONE is typed as a coordination donor.\n"
+                << "         The ligand CN target was NOT reduced (ideal " << ion.ideal_cn
+                << " used); a fully coordinated ligand may be over-penalized.\n"
+                << "         Re-prepare the receptor (scripts/prepare_receptor.py) or verify\n"
+                << "         atom typing / missing residues near the metal site.\n";
+        } else if (geometric > occupied) {
+            out << "Vina-Ion-Metal: note: " << ion.name << " geometric donor count ("
+                << geometric << ") exceeds the typed count (" << occupied
+                << ") used for the CN target; non-donor-typed N/O/S atoms were ignored.\n";
+        }
     }
 }
 

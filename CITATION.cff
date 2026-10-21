@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-message: "If you use VinaMetal, please cite it and the AutoDock Vina / AutoDock 4 foundations listed in the references."
-title: VinaMetal
+message: "If you use Vina-Ion-Metal, please cite it, its predecessor VinaMetal, and the AutoDock Vina / AutoDock 4 foundations listed in the references."
+title: Vina-Ion-Metal
 type: software
 version: 1.0.0
-date-released: "2026-10-19"
+date-released: "2026-10-21"
 license: Apache-2.0
-repository-code: "https://github.com/cristhianyaranganana-arch/VinaMetal"
+repository-code: "https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal"
 keywords:
   - molecular docking
   - metalloprotein
@@ -18,14 +18,19 @@ authors:
     orcid: "https://orcid.org/0009-0000-5539-0526"
     affiliation: "Universidad Norbert Wiener"
 abstract: >-
-  VinaMetal is a fork of AutoDock Vina 1.2.7 that integrates AutoDock 4 metal
-  coordination physics into the native scoring function: metal-specific 12-6
-  van der Waals terms, a differentiable coordination-number penalty and a
-  bounded geometry bonus, all with analytic gradients. It also detects the
-  coordination sites already occupied by the rigid receptor and adjusts the
-  ligand coordination-number target automatically. Redocking of GlfT2 (Mn2+)
-  and PDB 1s63 (Zn2+) reproduced the crystal binding modes with heavy-atom
-  RMSDs of 0.95 A and 0.33 A, respectively.
+  Vina-Ion-Metal is a fork of AutoDock Vina 1.2.7 that integrates AutoDock 4
+  metal coordination physics into the native scoring function: metal-specific
+  12-6 van der Waals terms, a differentiable coordination-number penalty with
+  lenient/strict regimes and a bounded geometry bonus, all with analytic
+  gradients. It detects the coordination sites already occupied by the rigid
+  receptor (with typing-independent geometric diagnostics) and adjusts the
+  ligand coordination-number target automatically, and ships a robust
+  receptor-preparation pipeline that types Cu2+/Ni2+ ions which Meeko cannot
+  emit. It is the corrected successor of VinaMetal 1.0.0, fixing the 16
+  problems identified by the 2026 technical audit. The tool is designed as a
+  mechanistic pose filter for metalloenzyme docking, not as an affinity
+  predictor; its metal scoring weights are provisional heuristics pending a
+  calibration benchmark.
 references:
   - type: article
     title: "AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, efficient optimization, and multithreading"
@@ -73,8 +78,8 @@ references:
     journal: Journal of Chemical Information and Modeling
     volume: 54
     issue: 8
-    start: 1931
-    end: 1941
+    start: 2371
+    end: 2379
     year: 2014
     doi: "10.1021/ci500209e"
   - type: article
@@ -89,6 +94,9 @@ references:
     end: 411
     year: 2001
     doi: "10.1107/S0907444900019168"
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.23499212
+  # NOTE: add the Zenodo DOI of the first Vina-Ion-Metal release under
+  # `identifiers` once it is minted (the VinaMetal DOI below belongs to the
+  # predecessor and must NOT be reused):
+  # identifiers:
+  #   - type: doi
+  #     value: 10.5281/zenodo.XXXXXXX

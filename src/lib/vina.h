@@ -79,11 +79,15 @@ public:
                 m_seed = generate_seed(seed);
                 m_no_refine = no_refine;
                 m_progress_callback = progress_callback;
-                // VinaMetal: metal coordination scoring defaults (conditional, active
-                // only when parametrized metal ions are present in the receptor)
-                m_weight_metal_vdw = 1.0;   // PLACEHOLDER default, calibrated in benchmark phase
-                m_weight_metal_cn = 1.0;    // PLACEHOLDER default
-                m_weight_metal_geom = 1.0;  // PLACEHOLDER default
+        // Vina-Ion-Metal: metal coordination scoring defaults (conditional, active
+        // only when parametrized metal ions are present in the receptor).
+        // v1.0 heuristic defaults (audit #9): literature-informed provisional
+        // values pending the full calibration benchmark. Rationale in
+        // docs/USAGE.md ("Metal scoring weights") - override with the
+        // --weight_metal_* command line options.
+        m_weight_metal_vdw = 1.2;   // heuristic: ~+20% on the AD4 pair well depth
+        m_weight_metal_cn = 0.5;    // heuristic: halves hard-count miscount damage
+        m_weight_metal_geom = 1.0;  // bounded bonus, unchanged
                 m_metal_cn_strict = false;
                 m_metals_enabled = true;
                 m_metal_scoring_attached = false;
@@ -140,8 +144,8 @@ public:
         void set_ad4_weights(double weight_ad4_vdw=0.1662, double weight_ad4_hb=0.1209,
                                                       double weight_ad4_elec=0.1406, double weight_ad4_dsolv=0.1322,
                                                       double weight_glue=50, double weight_ad4_rot=0.2983);
-        // ---- VinaMetal: metal coordination scoring API (O2/O3/O4) ----
-        void set_metal_weights(double weight_metal_vdw=1.0, double weight_metal_cn=1.0,
+        // ---- Vina-Ion-Metal: metal coordination scoring API (O2/O3/O4) ----
+        void set_metal_weights(double weight_metal_vdw=1.2, double weight_metal_cn=0.5,
                                double weight_metal_geom=1.0, bool metal_cn_strict=false);
         void set_metal_params(const std::string& path);          // --metal_params (JSON override)
         void set_metal_oxidation(const std::string& spec);       // "Fe=3" or "Fe=3,Cu=1"
@@ -193,7 +197,7 @@ private:
         int m_verbosity;
         bool m_no_refine;
         std::function<void(double)>* m_progress_callback;
-        // VinaMetal
+        // Vina-Ion-Metal
         metal_parameters m_metal_parameters;
         metal_scoring m_metal_scoring;
         double m_weight_metal_vdw;
@@ -207,8 +211,8 @@ private:
         output_container remove_redundant(const output_container& in, fl min_rmsd);
 
         void set_forcefield();
-        void refresh_metal_scoring();   // VinaMetal: rebuild + attach to grids
-        void check_receptor_metals();   // VinaMetal: detection warnings (oxidation states)
+        void refresh_metal_scoring();   // Vina-Ion-Metal: rebuild + attach to grids
+        void check_receptor_metals();   // Vina-Ion-Metal: detection warnings (oxidation states)
         std::vector<double> optimize(output_type& out, const int max_steps=0);
         int generate_seed(const int seed=0);
 };

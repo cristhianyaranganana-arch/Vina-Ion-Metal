@@ -34,14 +34,14 @@ struct non_cache : public igrid {
         virtual fl eval_intra(      model& m, fl v) const;
         virtual fl eval_deriv(      model& m, fl v) const; // needs m.coords, sets m.minus_forces // clean up
         bool within(const model& m, fl margin = 0.0001) const;
-        // VinaMetal: attach the conditional metal coordination scoring
+        // Vina-Ion-Metal: attach the conditional metal coordination scoring
         void set_metal_scoring(const struct metal_scoring* ms) { m_metal_scoring = ms; }
         fl slope;
 private:
         szv_grid sgrid;
         grid_dims gd;
         const precalculate* p;
-        const struct metal_scoring* m_metal_scoring; // VinaMetal
+        const struct metal_scoring* m_metal_scoring; // Vina-Ion-Metal
 };
 
 #endif

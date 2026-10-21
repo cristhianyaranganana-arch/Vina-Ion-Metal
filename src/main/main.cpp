@@ -69,10 +69,10 @@ void check_occurrence(boost::program_options::variables_map& vm, boost::program_
 int main(int argc, char* argv[]) {
         using namespace boost::program_options;
         const std::string git_version = VERSION;
-        const std::string version_string = "AutoDock Vina " + git_version;
+        const std::string version_string = "Vina-Ion-Metal " + git_version + " (based on AutoDock Vina 1.2.7)";
         const std::string error_message = "\n\n\
 Please report bugs through the Issue Tracker on GitHub \n\
-(https://github.com/ccsb-scripps/AutoDock-Vina/issues)., so\n\
+(https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal/issues), so\n\
 that this problem can be resolved. The reproducibility of the\n\
 error may be vital, so please remember to include the following in\n\
 your problem report:\n\
@@ -92,7 +92,14 @@ Thank you!\n";
 
         const std::string cite_message = "\
 #################################################################\n\
-# If you used AutoDock Vina in your work, please cite:          #\n\
+# If you used Vina-Ion-Metal in your work, please cite:         #\n\
+#                                                               #\n\
+# C. Yaranga Nana                                                #\n\
+# Vina-Ion-Metal v1.0.0: AutoDock Vina fork with native         #\n\
+# transition-metal coordination scoring (2026)                  #\n\
+# https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal   #\n\
+#                                                               #\n\
+# and the foundations of this work:                             #\n\
 #                                                               #\n\
 # J. Eberhardt, D. Santos-Martins, A. F. Tillack, and S. Forli  #\n\
 # AutoDock Vina 1.2.0: New Docking Methods, Expanded Force      #\n\
@@ -105,8 +112,14 @@ Thank you!\n";
 # multithreading, J. Comp. Chem. (2010)                         #\n\
 # DOI 10.1002/jcc.21334                                         #\n\
 #                                                               #\n\
-# Please see https://github.com/ccsb-scripps/AutoDock-Vina for  #\n\
-# more information.                                             #\n\
+# D. Santos-Martins, S. Forli, M. J. Ramos, A. J. Olson         #\n\
+# AutoDock4Zn: an improved AutoDock force field for             #\n\
+# small-molecule docking to zinc metalloproteins,               #\n\
+# J. Chem. Inf. Model. 54(8) 2371-2379 (2014)                   #\n\
+# DOI 10.1021/ci500209e                                         #\n\
+#                                                               #\n\
+# Please see https://github.com/cristhianyaranganana-arch/      #\n\
+# Vina-Ion-Metal for more information.                           #\n\
 #################################################################\n";
 
         try {
@@ -159,10 +172,13 @@ Thank you!\n";
                 double weight_vinardo_hydrophobic = -0.035;
                 double weight_vinardo_hydrogen = -0.600;
 
-                // VinaMetal: metal coordination weights and options
-                double weight_metal_vdw  = 1.0;  // PLACEHOLDER default, calibrated in benchmark phase
-                double weight_metal_cn   = 1.0;  // PLACEHOLDER default
-                double weight_metal_geom = 1.0;  // PLACEHOLDER default
+                // Vina-Ion-Metal: metal coordination weights and options
+                // v1.0 heuristic defaults (audit #9): provisional literature-informed
+                // values pending the full calibration benchmark; a runtime notice is
+                // printed whenever metal scoring is active. See docs/USAGE.md.
+                double weight_metal_vdw  = 1.2;  // +20% on the AD4 pair well depth
+                double weight_metal_cn   = 0.5;  // halves hard-count miscount damage (#9/#10)
+                double weight_metal_geom = 1.0;  // bounded bonus, unchanged
                 bool metal_cn_strict = false;
                 std::string metals_mode = "auto";      // auto | off
                 std::string metal_params_file;         // JSON override
@@ -241,14 +257,14 @@ Thank you!\n";
 
                         ("weight_glue", value<double>(&weight_glue)->default_value(weight_glue),                      "macrocycle glue weight")
 
-                        // VinaMetal: metal coordination scoring
-                        ("metals", value<std::string>(&metals_mode)->default_value(metals_mode), "metal coordination scoring: auto (default) or off (VinaMetal)")
-                        ("metal_params", value<std::string>(&metal_params_file), "JSON file overriding the built-in metal ion parameters (VinaMetal)")
-                        ("metal_oxidation", value<std::string>(&metal_oxidation), "oxidation states for multi-valent metals, e.g. 'Fe=3' or 'Fe=3,Cu=1' (VinaMetal)")
-                        ("weight_metal_vdw", value<double>(&weight_metal_vdw)->default_value(weight_metal_vdw), "metal vdW weight (VinaMetal)")
-                        ("weight_metal_cn", value<double>(&weight_metal_cn)->default_value(weight_metal_cn), "coordination-number penalty weight (VinaMetal)")
-                        ("weight_metal_geom", value<double>(&weight_metal_geom)->default_value(weight_metal_geom), "coordination geometry bonus weight (VinaMetal)")
-                        ("metal_cn_strict", bool_switch(&metal_cn_strict)->default_value(false), "treat any coordination number deviation as penalized even for incomplete shells (VinaMetal)")
+                        // Vina-Ion-Metal: metal coordination scoring
+                        ("metals", value<std::string>(&metals_mode)->default_value(metals_mode), "metal coordination scoring: auto (default) or off (Vina-Ion-Metal)")
+                        ("metal_params", value<std::string>(&metal_params_file), "JSON file overriding the built-in metal ion parameters (Vina-Ion-Metal)")
+                        ("metal_oxidation", value<std::string>(&metal_oxidation), "oxidation states for multi-valent metals, e.g. 'Fe=3' or 'Fe=3,Cu=1' (Vina-Ion-Metal)")
+                        ("weight_metal_vdw", value<double>(&weight_metal_vdw)->default_value(weight_metal_vdw), "metal vdW weight (Vina-Ion-Metal; 1.2 heuristic default)")
+                        ("weight_metal_cn", value<double>(&weight_metal_cn)->default_value(weight_metal_cn), "coordination-number penalty weight (Vina-Ion-Metal; 0.5 heuristic default)")
+                        ("weight_metal_geom", value<double>(&weight_metal_geom)->default_value(weight_metal_geom), "coordination geometry bonus weight (Vina-Ion-Metal)")
+                        ("metal_cn_strict", bool_switch(&metal_cn_strict)->default_value(false), "penalize ANY coordination-number deviation, including incomplete ligand shells (default: lenient, over-coordination only) (Vina-Ion-Metal)")
                 ;
                 options_description misc("Misc (optional)");
                 misc.add_options()
@@ -410,7 +426,7 @@ Thank you!\n";
 
                 Vina v(sf_name, cpu, seed, verbosity, no_refine);
 
-                // VinaMetal: metal coordination scoring setup BEFORE receptor loading
+                // Vina-Ion-Metal: metal coordination scoring setup BEFORE receptor loading
                 // (set_receptor runs metal detection and needs parameters/oxidation states)
                 if (metals_mode != "auto" && metals_mode != "off") {
                         std::cerr << "ERROR: --metals expects 'auto' or 'off', got '" << metals_mode << "'\n";

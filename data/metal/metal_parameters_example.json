@@ -1,5 +1,5 @@
 {
-  "_comment": "VinaMetal metal ion parameter overrides. Only the fields present are overridden. Built-in sources: AD4.1_bound.dat (Rii/epsii/vol/solpar), Harding Acta Cryst D (distances, CN, geometry). Cu2+/Ni2+ are PLACEHOLDER-UNVALIDATED.",
+  "_comment": "Vina-Ion-Metal metal ion parameter overrides. Only the fields present are overridden. Built-in sources: AD4.1_bound.dat (Rii/epsii/vol/solpar), Harding Acta Cryst D (distances, CN, geometry). Cu2+/Ni2+ are PLACEHOLDER-UNVALIDATED.",
   "Zn2+": {
     "Rii": 1.48, "epsii": 0.550, "vol": 1.70, "solpar": -0.00110,
     "ideal_cn": 4, "geometry": "tetrahedral",

@@ -1,6 +1,6 @@
 /*
 
-  VinaMetal - gradient verification test (finite differences vs analytic)
+  Vina-Ion-Metal - gradient verification test (finite differences vs analytic)
 
   Verifies that the analytic gradients of the metal coordination terms,
   exactly as BFGS consumes them through model::eval_deriv, match central
@@ -10,7 +10,10 @@
   (root-only ligands, no torsions) placed at ~100 degrees around the metal
   with both oxygens at ~2.05 A. This exercises:
     - term (a) metal vdW pair potential (donors near the 12-6 minimum)
-    - term (b) CN penalty (CN ~ 2 vs ideal 4 -> strong gradient)
+    - term (b) CN penalty: in LENIENT mode (default) the fixture is
+      under-coordinated (CN ~ 2 vs ideal 4) so the hinge nulls the penalty;
+      the STRICT variant (--metal_cn_strict) re-activates the quadratic
+      penalty and its gradient explicitly.
     - term (c) geometry bonus (angle off-ideal -> nonzero angular gradient)
   Rotation-vector increments replicate rigid_conf::increment exactly, and the
   central difference step h = 1e-6 keeps the chord-vs-tangent artifact well
@@ -77,8 +80,9 @@ struct eval_context {
 
     // pure_metal: zero out the standard Vina weights so the total energy is
     // ONLY the metal coordination terms (all C-infinity) - this isolates the
-    // gradients introduced by VinaMetal from the pre-existing finite-difference
-    // artifacts of the standard terms (repulsion kinks, SO(3) chord effects).
+    // gradients introduced by the metal terms from the pre-existing
+    // finite-difference artifacts of the standard terms (repulsion kinks,
+    // SO(3) chord effects).
     eval_context(model& m, const grid_dims& gd, metal_scoring* ms, bool pure_metal) : v(1000, 1000, 1000) {
         fl w_scale = pure_metal ? 0.0 : 1.0;
         flv w;
@@ -191,11 +195,18 @@ int main(int argc, char** argv) {
     bool ok = true;
     metal_parameters params;
 
-    // 1) PURE metal scoring: the total energy is only the three metal terms
-    //    (all C-infinity), so the analytic gradients must match central finite
-    //    differences to 1e-4 (acceptance criterion #5).
+    // 1) PURE metal scoring, LENIENT CN mode (default): the total energy is
+    //    only the metal terms, so the analytic gradients must match central
+    //    finite differences to 1e-4 (acceptance criterion #5).
     metal_scoring ms(&params, 1.0, 1.0, 1.0, false);
-    run_gradient_check(RECEPTOR_ZN, &ms, "Zn + pure metal terms", ok, true, 1e-4);
+    run_gradient_check(RECEPTOR_ZN, &ms, "Zn + pure metal terms (lenient CN)", ok, true, 1e-4);
+
+    // 1b) PURE metal scoring, STRICT CN mode (--metal_cn_strict): the fixture
+    //     is under-coordinated (CN 2 vs target 4), so the quadratic CN penalty
+    //     and its gradient are active and must also match the finite
+    //     differences (exercises the strict branch of audit fix #2).
+    metal_scoring ms_strict(&params, 1.0, 1.0, 1.0, true);
+    run_gradient_check(RECEPTOR_ZN, &ms_strict, "Zn + pure metal terms (strict CN)", ok, true, 1e-4);
 
     // 2) FULL Vina scoring + metal terms: verify the metal gradients do not
     //    interfere with the standard machinery. The FD tolerance is relaxed to
@@ -205,7 +216,8 @@ int main(int argc, char** argv) {
     run_gradient_check(RECEPTOR_ZN, &ms, "Zn + full scoring", ok, false, 5e-3);
 
     // 3) control WITHOUT metals in receptor (full scoring): same FD artifact
-    //    level must appear, proving the artifacts are not introduced by VinaMetal
+    //    level must appear, proving the artifacts are not introduced by the
+    //    metal terms
     metal_scoring ms2(&params, 1.0, 1.0, 1.0, false);
     run_gradient_check(RECEPTOR_NOMETAL, &ms2, "no metal control", ok, false, 5e-3);
 

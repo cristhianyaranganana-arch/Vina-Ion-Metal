@@ -74,10 +74,10 @@ const sz AD_TYPE_CG1  = 27;
 const sz AD_TYPE_CG2  = 28;
 const sz AD_TYPE_CG3  = 29;
 const sz AD_TYPE_W    = 30; // hydrated ligand
-// VinaMetal: metal types not calibrated in AD4 (PLACEHOLDER parameters, see
+// Vina-Ion-Metal (from VinaMetal): metal types not calibrated in AD4 (PLACEHOLDER parameters, see
 // metal_parameters.cpp). Added at the END to preserve all existing indices.
-const sz AD_TYPE_Cu   = 31; // VinaMetal: copper ion (non-AD metal promoted to typed metal)
-const sz AD_TYPE_Ni   = 32; // VinaMetal: nickel ion (non-AD metal promoted to typed metal)
+const sz AD_TYPE_Cu   = 31; // Vina-Ion-Metal: copper ion (non-AD metal promoted to typed metal)
+const sz AD_TYPE_Ni   = 32; // Vina-Ion-Metal: nickel ion (non-AD metal promoted to typed metal)
 const sz AD_TYPE_SIZE = 33;
 
 // X-Score
@@ -182,7 +182,7 @@ const atom_kind atom_kind_data[] = {
         {"CG2",2.00000, 0.15000, 0.0, 0.0,   -0.00143,   33.51030,   0.77}, // 28
         {"CG3",2.00000, 0.15000, 0.0, 0.0,   -0.00143,   33.51030,   0.77}, // 29
         {"W",  0.00000, 0.00000, 0.0, 0.0,    0.00000,    0.00000,   0.00}, // 30
-        // VinaMetal: PLACEHOLDER-UNVALIDATED parameters (Cu2+/Ni2+ are not calibrated in
+        // Vina-Ion-Metal (from VinaMetal): PLACEHOLDER-UNVALIDATED parameters (Cu2+/Ni2+ are not calibrated in
         // AD4.1_bound.dat). radius = Rii/2 with Rii estimates; adjustable via --metal_params.
         {"Cu", 0.70000, 0.55000, 0.0, 0.0,   -0.00110,    1.70000,   1.32}, // 31
         {"Ni", 0.68000, 0.55000, 0.0, 0.0,   -0.00110,    1.70000,   1.24}  // 32
@@ -249,8 +249,8 @@ inline sz ad_type_to_el_type(sz t) {
                 case AD_TYPE_Zn   : return EL_TYPE_Met;
                 case AD_TYPE_Ca   : return EL_TYPE_Met;
                 case AD_TYPE_Fe   : return EL_TYPE_Met;
-                case AD_TYPE_Cu   : return EL_TYPE_Met; // VinaMetal
-                case AD_TYPE_Ni   : return EL_TYPE_Met; // VinaMetal
+                case AD_TYPE_Cu   : return EL_TYPE_Met; // Vina-Ion-Metal
+                case AD_TYPE_Ni   : return EL_TYPE_Met; // Vina-Ion-Metal
                 case AD_TYPE_Cl   : return EL_TYPE_Cl;
                 case AD_TYPE_Br   : return EL_TYPE_Br;
                 case AD_TYPE_Si   : return EL_TYPE_Si;

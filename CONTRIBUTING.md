@@ -1,6 +1,6 @@
-# Contributing to VinaMetal
+# Contributing to Vina-Ion-Metal
 
-Thank you for your interest in improving VinaMetal. This document describes how
+Thank you for your interest in improving Vina-Ion-Metal. This document describes how
 to build the project, run the tests, and submit changes.
 
 ## Code of Conduct
@@ -12,10 +12,10 @@ attacks, harassment and discriminatory language are not.
 
 Open an issue and include:
 
-- VinaMetal version (`vina --version`) and commit hash.
+- Vina-Ion-Metal version (`vina --version`) and commit hash.
 - Operating system, compiler version, CMake version and Boost version.
 - The exact command line or configuration file used.
-- The complete log, including the `VinaMetal:` startup lines.
+- The complete log, including the `Vina-Ion-Metal:` startup lines.
 - Whether the problem also occurs with `--metals off`. If it does, it is likely
   inherited from AutoDock Vina 1.2.7.
 

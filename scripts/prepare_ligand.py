@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Wrapper around Meeko's mk_prepare_ligand.py.
 
-VinaMetal consumes PDBQT files; Meeko converts SDF/PDB ligands to PDBQT with
+Vina-Ion-Metal consumes PDBQT files; Meeko converts SDF/PDB ligands to PDBQT with
 torsions and AutoDock atom types. This wrapper only forwards arguments, so the
 upstream tool's options and behavior are unchanged.
 

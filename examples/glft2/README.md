@@ -15,12 +15,12 @@ The second Mn2+ of 4FIY belongs to chain B and is not part of this receptor.
 
 ## Expected behavior
 
-VinaMetal detects the Mn2+ automatically and counts the rigid receptor donors
+Vina-Ion-Metal detects the Mn2+ automatically and counts the rigid receptor donors
 already bound to it (Asp256, His396 and two Asp258 carboxylate oxygens; four
 donors within the 3.1 Å coordination cutoff). The effective ligand CN target is
 therefore `6 - 4 = 2`, and the log reports:
 
-    VinaMetal: Mn2+ CN target = ideal 6 - receptor-bound 4 = 2
+    Vina-Ion-Metal: Mn2+ CN target = ideal 6 - receptor-bound 4 = 2
 
 In the validation run, the best pose (mode 3 of 9) reproduces the crystal
 coordination with two phosphate oxygens at 2.11 and 2.14 Å from the Mn2+ and a
