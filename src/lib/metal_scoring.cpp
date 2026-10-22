@@ -20,6 +20,8 @@ const fl metal_pair_cap   = 100000; // AD4-style cap (potentials.h ad4_vdw)
 const fl metal_cn_sigma   = 0.15;   // Angstrom; smoothness of CN sigmoid
 const fl metal_ang_sigma  = 0.12;   // cosine units; smoothness of angular bonus
 const fl metal_hinge_delta = 0.05;  // Vina-Ion-Metal: softness of the lenient CN hinge (audit #2)
+const fl metal_shell_tail = 6.0;   // [PATCH-F1] sigmas de cola de sigmoide mantenidos dentro de la capa
+const fl metal_force_cap  = 1.0e4; // [PATCH-F2] limite suave de la fuerza de par (escala curl v=1000)
 
 // Coordination donor set (XS typing, native Vina/Vinardo scoring).
 // AD4 reference set is NA/NS/OA/OS/SA/S/N - see MAPA_DE_PORTERIA.md section 4.
@@ -104,7 +106,13 @@ inline fl metal_pair_energy_deriv(fl r, fl d0, fl epsij) {
     // dE/dr = (12 * epsij / r) * ( (d0/r)^6 - (d0/r)^12 )
     fl x6 = int_pow<6>(d0 / r);
     fl x12 = x6 * x6;
-    return (12.0 * epsij / r) * (x6 - x12);
+    // [PATCH-F2] saturacion suave: |dE/dr| <= metal_force_cap, C-infinity.
+    // La energia ya esta tapada a metal_pair_cap (convencion AD4) pero la derivada
+    // no lo estaba: cerca de r -> 0 alcanza 1e8..1e17 kcal/mol/A y dispara el BFGS.
+    // Los terminos estandar acotan derivadas via curl(v=1000) en ~1e4; la tanh
+    // deja intacto el rango fisico (|dE/dr| < cap para r >~ 1.05 A).
+    fl dor = (12.0 * epsij / r) * (x6 - x12);
+    return metal_force_cap * std::tanh(dor / metal_force_cap);
 }
 
 fl metal_scoring::eval(const model& m, vecv* forces) const {
@@ -158,11 +166,18 @@ fl metal_scoring::eval(const model& m, vecv* forces) const {
         flv shell_r;
         fl cn = 0;
         fl r_mid = ion.cn_cutoff - 1.5 * metal_cn_sigma;
+        // [PATCH-F1] la pertenencia a la capa debe cubrir toda la cola de la
+        // sigmoide: en r = cn_cutoff el peso sigmoide aun vale ~0.18, asi que
+        // cortar la capa exactamente en cn_cutoff producia un salto de cn (y de
+        // E ~ 0.016 kcal/mol) al cruzar el borde, contradiciendo el claim
+        // C-infinity. Con corte a cn_cutoff + 6*sigma el peso residual es ~5e-4
+        // y el salto residual queda por debajo de ~1e-12 kcal/mol.
+        const fl shell_cutoff = ion.cn_cutoff + metal_shell_tail * metal_cn_sigma;
         VINA_FOR_IN(d, donors) {
             const sz i = donors[d];
             vec diff; diff = m.coords[i] - mc;
             fl r2 = sqr(diff);
-            if (r2 >= sqr(ion.cn_cutoff)) continue;
+            if (r2 >= sqr(shell_cutoff)) continue;
             fl r = std::sqrt(r2);
             if (r < epsilon_fl) continue;
             shell.push_back(i);
@@ -282,8 +297,10 @@ void metal_scoring::prepare(const model& m) {
 }
 
 void metal_scoring::build_cache(const model& m) const {
+    // [PATCH-F4] el campo `key` se elimino: se almacenaba pero nunca se comparaba;
+    // la validez del cache se decide por tamaños (n_grid_atoms/n_movable) porque
+    // las copias por hilo de parallel_mc comparten topologia pero no direccion.
     m_cache.prepared = true;
-    m_cache.key = (const void*)&m;
     m_cache.n_grid_atoms = m.grid_atoms.size();
     m_cache.n_movable = m.num_movable_atoms();
     m_cache.metal_atoms.clear();

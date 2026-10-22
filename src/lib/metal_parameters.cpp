@@ -176,16 +176,20 @@ bool metal_parameters::knows_element(const std::string& element) const {
 }
 
 sz metal_parameters::index_for_ad_type_with_state(sz ad_type, int state) const {
-    // Exact match honoring the requested oxidation state, or size() if the
-    // state has no entry (used by the fallback diagnostic, audit #7).
-    sz best = ions.size();
+    // [PATCH-F3] se honra el contrato documentado en metal_parameters.h:
+    // la entrada EXACTA para el estado solicitado, o ions.size() si ese estado
+    // no tiene entrada parametrizada. La implementacion anterior devolvia la
+    // primera entrada con el mismo ad_type, por lo que el diagnostico audit-#7
+    // de Vina::check_receptor_metals() (que compara contra size()) era
+    // inalcanzable (codigo muerto). La ruta de scoring no cambia: usa
+    // index_for_ad_type(), que conserva su fallback silencioso de primera
+    // coincidencia.
     VINA_FOR(i, ions.size()) {
         const metal_ion& m = ions[i];
         if (m.ad_type != ad_type) continue;
-        if (best == ions.size()) best = i;
         if (m.formal_charge == state) return i;
     }
-    return best;
+    return ions.size();
 }
 
 bool metal_parameters::has_oxidation_choice(const std::string& element) const {

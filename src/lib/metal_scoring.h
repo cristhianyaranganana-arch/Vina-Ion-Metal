@@ -99,7 +99,8 @@ private:
     // so they stay valid for copies of the same model used by worker threads
     struct model_cache {
         bool prepared;
-        const void* key;       // model that built the cache (single-threaded paths)
+        // [PATCH-F4] el campo `key` se elimino: se almacenaba pero nunca se
+        // comparaba; la validez del cache se decide por tamaños (ver eval()).
         sz n_grid_atoms;
         sz n_movable;
         szv metal_atoms; // indices into m.grid_atoms
@@ -110,7 +111,7 @@ private:
         // Vina-Ion-Metal (audit #10): typing-independent geometric donor count,
         // used for robustness diagnostics in report_cn_targets().
         std::vector<int> geometric_cn;
-        model_cache() : prepared(false), key(NULL), n_grid_atoms(0), n_movable(0) {}
+        model_cache() : prepared(false), n_grid_atoms(0), n_movable(0) {}
     };
     mutable model_cache m_cache;
 

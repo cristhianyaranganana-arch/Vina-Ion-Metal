@@ -126,6 +126,10 @@ fl non_cache::eval_deriv(      model& m, fl v) const { // clean up
                         case XS_TYPE_G1:
                         case XS_TYPE_G2:
                         case XS_TYPE_G3:
+                                // [PATCH-F5] poner la fuerza a cero como hace
+                                // cache::eval_deriv (paridad entre rutas; el
+                                // upstream tambien omite la asignacion aqui).
+                                m.minus_forces[i].assign(0);
                                 continue;
                         case XS_TYPE_C_H_CG0:
                         case XS_TYPE_C_H_CG1:
