@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(Vina-Ion-Metal VERSION 1.0.0 LANGUAGES CXX)
+project(Vina-Ion-Metal VERSION 1.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -80,11 +80,11 @@ target_link_libraries(vina_ion_metal_core PUBLIC ${Boost_LIBRARIES} Threads::Thr
 
 add_executable(vina src/main/main.cpp)
 target_link_libraries(vina PRIVATE vina_ion_metal_core)
-target_compile_definitions(vina PRIVATE VERSION="v1.0.0")
+target_compile_definitions(vina PRIVATE VERSION="v1.0.1")
 
 add_executable(vina_split src/split/split.cpp)
 target_link_libraries(vina_split PRIVATE vina_ion_metal_core)
-target_compile_definitions(vina_split PRIVATE VERSION="v1.0.0")
+target_compile_definitions(vina_split PRIVATE VERSION="v1.0.1")
 
 install(TARGETS vina vina_split RUNTIME DESTINATION bin)
 

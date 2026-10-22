@@ -95,7 +95,7 @@ Thank you!\n";
 # If you used Vina-Ion-Metal in your work, please cite:         #\n\
 #                                                               #\n\
 # C. Yaranga Nana                                                #\n\
-# Vina-Ion-Metal v1.0.0: AutoDock Vina fork with native         #\n\
+# Vina-Ion-Metal v1.0.1: AutoDock Vina fork with native         #\n\
 # transition-metal coordination scoring (2026)                  #\n\
 # https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal   #\n\
 #                                                               #\n\

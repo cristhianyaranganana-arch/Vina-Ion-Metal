@@ -1,5 +1,54 @@
 # Changelog
 
+## Vina-Ion-Metal 1.0.1 (2026-10-23)
+
+Maintenance patch: corrects five defects found by the independent
+post-release audit of the metal coordination scoring path. The
+byte-identical guarantee versus AutoDock Vina 1.2.7 (receptors without
+parametrized metals) is preserved and remains CI-enforced.
+
+### Correctness fixes (metal scoring path)
+
+- **Coordination shell continuity (F1).** The coordination shell now
+  extends to `cn_cutoff + 6*sigma` so the complete sigmoid tail of the CN
+  weight stays inside the layer. Cutting exactly at `cn_cutoff` produced a
+  discontinuity (~0.016 kcal/mol) when a donor crossed the shell border,
+  contradicting the documented C-infinity smoothness of the CN penalty.
+- **Metal pair force capping (F2).** The pair derivative is now smoothly
+  saturated at 1e4 kcal/mol/A (`tanh`, the same scale as the standard
+  `curl(v=1000)` cap). Near r -> 0 the derivative previously reached
+  1e8-1e17 and could destabilize the BFGS local optimizer. Energies were
+  already capped (AD4 convention); scores are unaffected.
+- **`index_for_ad_type_with_state` contract (F3).** Now returns the exact
+  entry for the requested oxidation state, or `ions.size()` when that state
+  has no parametrized entry, as documented in the header. The previous
+  silent first-match fallback made the unparametrized-state diagnostic of
+  `Vina::check_receptor_metals()` unreachable (dead code). The scoring
+  path is unchanged: it uses `index_for_ad_type()`, which keeps its
+  fallback.
+- **Dead cache field removed (F4).** `model_cache::key` was stored but
+  never compared; cache validity is decided by the atom counts
+  (`n_grid_atoms`/`n_movable`).
+- **`non_cache` force parity (F5).** G0-G3 pseudoatom forces are now zeroed
+  in `non_cache::eval_deriv`, matching `cache::eval_deriv`.
+
+### Validation
+
+- Metal gradient checks 4/4 PASS (analytic vs finite differences, both CN
+  regimes and the no-metal control).
+- CN detection, unparametrized-metal regression and the byte-identical
+  regression against the official AutoDock Vina 1.2.7 binary all PASS
+  (1iep: -13.170 both).
+- Fixed-pose scores at the bundled examples are unchanged (glft2: 2.844).
+
+### Compatibility
+
+- Identical results to 1.0.0 for the validated poses. Docking trajectories
+  can differ from 1.0.0 only in the rare configurations where a donor
+  crosses the old shell border (bounded energy shift ~0.016 kcal/mol).
+
+---
+
 ## Vina-Ion-Metal 1.0.0 (2026-10-21)
 
 Corrected and completed successor of VinaMetal 1.0.0. Incorporates the fixes
