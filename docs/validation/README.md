@@ -8,7 +8,7 @@ each log.
 
 | File | System | Result (VinaMetal 1.0.0 defaults) |
 |---|---|---|
-| `glft2_cnfix.log` | GlfT2, PDB 4FIY chain A, Mn²⁺ | CN target 2 (4 receptor donors); mode 3 reproduces the crystal pose with 0.95 Å RMSD. |
+| `glft2_cnfix.log` | GlfT2, PDB 4FIY chain A, Mn²⁺ | CN target 2 (4 receptor donors); top modes coordinate Mn²⁺ at Harding-consistent O–Mn distances (~2.1–2.2 Å). Crystal-pose RMSD is not reproducible from the bundled files (see the ligand note below). |
 | `1s63_cnfix.log` | PDB 1s63, Zn²⁺ | CN target 1 (3 receptor donors); top-1 pose has 0.33 Å RMSD. |
 | `regression_no_metal.log` | 1iep, no metal | `--local_only` output byte-identical to AutoDock Vina 1.2.7. |
 
@@ -26,10 +26,13 @@ each log.
 - The GlfT2 and 1s63 logs show the `AutoDock Vina v1.2.7` banner because the
   binary predates the `v1.0.0` version string. The `VinaMetal:` lines in those
   logs confirm metal scoring was active.
-- The bundled GlfT2 ligand was translated into the crystal frame so that it lies
-  inside the docking box. The CN target is determined by the receptor and is
-  independent of that translation; global-search mode ordering can differ with
-  the Boost version (see the regression note below).
+- The bundled GlfT2 ligand is a translated input, not the crystal pose: its
+  closest heavy atom sits ~5.6 Å from the Mn²⁺, whereas the deposited 4FIY
+  ligand coordinates Mn²⁺ at 2.79/2.89 Å. The example demonstrates
+  metal-guided pose generation; the reproducible metric is the pose-level
+  metal distance, not crystal-pose RMSD. The CN target is determined by the
+  receptor and is independent of that translation; global-search mode
+  ordering can differ with the Boost version (see the regression note below).
 - Global docking trajectories are not expected to match binaries built against
   a different Boost version, because Boost's normal distribution defines the
   random stream. Scores and gradients for a fixed pose are unaffected; this is
