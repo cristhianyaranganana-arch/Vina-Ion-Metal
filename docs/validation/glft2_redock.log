@@ -1,0 +1,91 @@
+# Vina-Ion-Metal v1.0.2 validation log - GlfT2 crystal redocking (Mn2+ site)
+#
+# System: galactofuranosyltransferase GlfT2, PDB 4FIY chain A, Mn2+ (residue 702).
+# Ligand: examples/glft2/ligand.pdbqt = deposited 4FIY UDP (chain A, residue 701),
+#   prepared with Meeko; the crystal coordinates are preserved exactly
+#   (max deviation 0.000 A). In the deposited pose the UDP coordinates Mn2+
+#   through O1B (2.79 A) and O1A (2.89 A); those oxygens are typed as the
+#   unprotonated (=O) sites in the PDBQT.
+# Command (run inside examples/glft2): vina --config config.txt --out glft2_out.pdbqt
+#   seed 42, exhaustiveness 16, num_modes 9, box 22 A at (142.54, 32.19, 48.55),
+#   --metals auto (implicit in config.txt).
+# Binary: Vina-Ion-Metal v1.0.2, Linux x86-64, static Boost 1.83 build.
+#   Reported affinities are metal-aware since v1.0.2 (fix F6: the coordination
+#   term is no longer cancelled out of the reported energy). Global-search
+#   trajectories depend on the Boost version; fixed-pose scores do not.
+# Post-run analysis (NOT printed by Vina; symmetry-aware heavy-atom RMSD vs the
+#   deposited UDP pose via RDKit GetBestRMS, O-Mn distances from the PDBQT):
+#   mode 1 (top-ranked, -8.861): RMSD 1.50 A, coordinates Mn2+ with three
+#     oxygens at 2.12/2.18/2.51 A;
+#   modes 2-9: RMSD 1.75/2.37/1.40/1.96/1.83/1.66/1.54/0.64 A,
+#     affinities -8.806/-8.781/-8.654/-8.622/-8.420/-8.413/-8.334/-8.310;
+#   all nine modes coordinate Mn2+ (minimum O-Mn 2.10-2.62 A, within the
+#   Harding Mn-O range ~2.15 A; the crystal coordination itself is 2.79/2.89 A).
+#   Rescoring mode 1 with --score_only reproduces the printed affinity to
+#   0.002 kcal/mol (pre-F6 binaries were internally inconsistent by ~1.4).
+#
+# Raw command output follows.
+Vina-Ion-Metal v1.0.2 (based on AutoDock Vina 1.2.7)
+#################################################################
+# If you used Vina-Ion-Metal in your work, please cite:         #
+#                                                               #
+# C. Yaranga Nana                                                #
+# Vina-Ion-Metal v1.0.2: AutoDock Vina fork with native         #
+# transition-metal coordination scoring (2026)                  #
+# https://github.com/cristhianyaranganana-arch/Vina-Ion-Metal   #
+#                                                               #
+# and the foundations of this work:                             #
+#                                                               #
+# J. Eberhardt, D. Santos-Martins, A. F. Tillack, and S. Forli  #
+# AutoDock Vina 1.2.0: New Docking Methods, Expanded Force      #
+# Field, and Python Bindings, J. Chem. Inf. Model. (2021)       #
+# DOI 10.1021/acs.jcim.1c00203                                  #
+#                                                               #
+# O. Trott, A. J. Olson,                                        #
+# AutoDock Vina: improving the speed and accuracy of docking    #
+# with a new scoring function, efficient optimization and       #
+# multithreading, J. Comp. Chem. (2010)                         #
+# DOI 10.1002/jcc.21334                                         #
+#                                                               #
+# D. Santos-Martins, S. Forli, M. J. Ramos, A. J. Olson         #
+# AutoDock4Zn: an improved AutoDock force field for             #
+# small-molecule docking to zinc metalloproteins,               #
+# J. Chem. Inf. Model. 54(8) 2371-2379 (2014)                   #
+# DOI 10.1021/ci500209e                                         #
+#                                                               #
+# Please see https://github.com/cristhianyaranganana-arch/      #
+# Vina-Ion-Metal for more information.                           #
+#################################################################
+
+Scoring function : vina
+Rigid receptor: receptor.pdbqt
+Ligand: ligand.pdbqt
+Grid center: X 142.54 Y 32.19 Z 48.55
+Grid size  : X 22 Y 22 Z 22
+Grid space : 0.375
+Exhaustiveness: 16
+CPU: 0
+Verbosity: 1
+
+Vina-Ion-Metal: parametrized metal ions in receptor: Mn(x1) - coordination scoring is ACTIVE
+Vina-Ion-Metal: NOTE: default metal weights are provisional heuristics (v1.0: vdw 1.2, cn 0.5, geom 1);
+         override with --weight_metal_vdw/--weight_metal_cn/--weight_metal_geom for calibrated campaigns.
+Vina-Ion-Metal: Mn2+ CN target = ideal 6 - receptor-bound 4 = 2
+Computing Vina grid ... done.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.861          0          0
+   2       -8.806      3.811      5.689
+   3       -8.781      1.997      4.869
+   4       -8.654      3.598      5.412
+   5       -8.622      3.777      6.674
+   6        -8.42      1.748      2.354
+   7       -8.413      1.775      2.701
+   8       -8.334      2.024      3.431
+   9        -8.31      1.169      1.976

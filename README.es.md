@@ -72,10 +72,10 @@ byte a byte.
 
 ## Validación
 
-| Sistema | Ion | Donantes detectados | Objetivo CN ligando | Resultado (defaults v1.0.0, semilla 42, exhaustividad 16) |
+| Sistema | Ion | Donantes detectados | Objetivo CN ligando | Resultado (corridas de validación registradas, semilla 42, exhaustividad 16) |
 |---|---|---|---|---|
-| GlfT2, PDB 4FIY cadena A | Mn²⁺ | 4 | 2 | modo 1 coordina el Mn²⁺ (O–Mn 2,20 Å); modo 2 bidentado 2,13/2,15 Å (Harding Mn–O = 2,15 Å) |
-| PDB 1s63 | Zn²⁺ | 3 (geométrico 4, con diagnóstico) | 1 | pose top-1 coordina el Zn²⁺ a 2,26 Å |
+| GlfT2, PDB 4FIY cadena A | Mn²⁺ | 4 | 2 | **redocking cristal v1.0.2**: pose top-1 −8.86 kcal/mol (metal-consciente), RMSD simétrico 1,50 Å contra la pose UDP depositada, coordina el Mn²⁺ con tres oxígenos a 2,12/2,18/2,51 Å (Harding Mn–O = 2,15 Å); los 9 modos coordinan el ion |
+| PDB 1s63 | Zn²⁺ | 3 (geométrico 4, con diagnóstico) | 1 | pose top-1 coordina el Zn²⁺ a 2,26 Å (poses sin cambios desde la corrida de la era v1.0.0) |
 | PDB 1iep (sin metal) | — | — | — | salida `--local_only` **idéntica byte a byte** a AutoDock Vina 1.2.7 (verificado en CI) |
 
 El ajuste automático se imprime antes del docking, por ejemplo:
@@ -86,7 +86,10 @@ El RMSD es de átomos pesados con emparejamiento por simetría (RDKit
 `GetBestRMS`) contra el ligando cristal. Dado que el régimen de CN por defecto
 y los pesos por defecto cambiaron respecto a VinaMetal 1.0.0 (auditorías #2 y
 #9), los números de re-docking pueden variar; ejecute `examples/*/config.txt`
-para reproducirlos.
+para reproducirlos. Desde v1.0.2 el ejemplo GlfT2 incluye el ligando cristal
+depositado, por lo que su redocking se mide por RMSD contra la pose cristal
+(vea `docs/validation/`), y las afinidades reportadas incluyen el término
+metálico (corrección F6).
 
 ## Inicio rápido
 

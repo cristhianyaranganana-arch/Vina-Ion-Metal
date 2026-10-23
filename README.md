@@ -66,10 +66,10 @@ Vina potentials to avoid double counting. Receptors containing
 
 ## Validation
 
-| System | Ion | Receptor donors detected | Ligand CN target | Result (v1.0.0 defaults, seed 42, exhaustiveness 16) |
+| System | Ion | Receptor donors detected | Ligand CN target | Result (recorded validation runs, seed 42, exhaustiveness 16) |
 |---|---|---|---|---|
-| GlfT2, PDB 4FIY chain A | Mn²⁺ | 4 | 2 | mode 1 coordinates the Mn²⁺ (O–Mn 2.20 Å); mode 2 bidentate 2.13/2.15 Å (Harding Mn–O = 2.15 Å) |
-| PDB 1s63 | Zn²⁺ | 3 (geometric 4, diagnostic printed) | 1 | top-1 pose coordinates the Zn²⁺ at 2.26 Å |
+| GlfT2, PDB 4FIY chain A | Mn²⁺ | 4 | 2 | **v1.0.2 crystal redocking**: top-ranked pose −8.86 kcal/mol (metal-aware), 1.50 Å symmetry-aware RMSD against the deposited UDP pose, coordinates the Mn²⁺ with three oxygens at 2.12/2.18/2.51 Å (Harding Mn–O = 2.15 Å); all 9 modes coordinate the ion |
+| PDB 1s63 | Zn²⁺ | 3 (geometric 4, diagnostic printed) | 1 | top-1 pose coordinates the Zn²⁺ at 2.26 Å (poses unchanged since the v1.0.0-era run) |
 | PDB 1iep (no metal) | — | — | — | `--local_only` output **byte-identical** to AutoDock Vina 1.2.7 (CI-enforced) |
 
 The automatic adjustment is printed before docking, for example:
@@ -79,7 +79,10 @@ The automatic adjustment is printed before docking, for example:
 Pose-level metal distances are measured from the output PDBQT; RMSD should be
 computed symmetry-aware (RDKit `GetBestRMS`). With respect to VinaMetal 1.0.0
 the CN regime (lenient default) and default weights changed (audits #2 and
-#9), so rankings differ; run `examples/*/config.txt` to reproduce.
+#9), so rankings differ; run `examples/*/config.txt` to reproduce. Since
+v1.0.2 the GlfT2 example bundles the deposited crystal ligand, so its
+redocking is measured by crystal-pose RMSD (see `docs/validation/`), and the
+reported affinities include the metal term (fix F6).
 
 ## Quick Start
 
