@@ -248,7 +248,8 @@ fl non_cache::eval_intra(model& m, fl v) const { // clean up
                 curl(this_e, v);
                 e += this_e + out_of_bounds_penalty;
         }
-        // Vina-Ion-Metal: conditional metal coordination energy (flex-rigid)
-        if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
+        // F6 fix: the metal term is added exactly once, in eval() (inter bucket).
+        // Adding it here too made it appear in both the "Flex - Receptor" component
+        // and the Unbound System's Energy, cancelling out of the reported affinity.
         return e;
 }

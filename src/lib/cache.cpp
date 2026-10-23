@@ -127,8 +127,9 @@ fl cache::eval_intra(model& m, fl v) const {
                 const grid& g = m_grids[t];
                 e += g.evaluate(m.coords[i], m_slope, v);
         }
-        // Vina-Ion-Metal: flex-rigid metal contributions (same conditional terms)
-        if (m_metal_scoring) e += m_metal_scoring->eval(m, NULL);
+        // F6 fix: the metal term is added exactly once, in eval() (inter bucket).
+        // Adding it here too made it appear in both the "Flex - Receptor" component
+        // and the Unbound System's Energy, cancelling out of the reported affinity.
         return e;
 }
 
