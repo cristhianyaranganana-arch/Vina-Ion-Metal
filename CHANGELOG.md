@@ -1,5 +1,78 @@
 # Changelog
 
+## Vina-Ion-Metal 1.0.2 (2026-10-23)
+
+Maintenance patch: corrects the energy-reporting defect F6 found by the
+repository owner during redocking validations, and turns the GlfT2 example
+into a legitimate crystal-pose redocking (the bundled ligand is now the
+deposited 4FIY pose; the v1.0.1 binaries posed correctly but reported
+metal-free energies). The byte-identical guarantee versus AutoDock Vina
+1.2.7 (receptors without parametrized metals) is preserved and remains
+CI-enforced.
+
+### Correctness fix (energy reporting)
+
+- **Metal term cancelled out of every reported affinity (F6).** The metal
+  coordination term M was added with the same total to two buckets: the
+  inter paths (`cache::eval`/`non_cache::eval` and the `eval_deriv` paths
+  that guide the search) and both `eval_intra` implementations ("flex-rigid
+  metal contributions"). Because the reported total subtracts the Unbound
+  System's Energy (eval_intramolecular -> `eval_intra`), M entered the
+  intra and unbound components with opposite signs and cancelled exactly
+  out of every printed energy (mode table, `REMARK VINA RESULT`,
+  `--score_only`). Reported affinities carried no metal chemistry,
+  `--weight_metal_*` appeared to do nothing, a phantom "Flex - Receptor"
+  line appeared without flexible side chains, and modes 2-9 carried only the
+  differential M_i - M_1 (upstream pose-1 intramolecular quirk). The fix
+  removes M from both `eval_intra` implementations so it is counted exactly
+  once, in the inter bucket. The search is untouched (`eval_deriv` paths
+  unmodified): poses are byte-identical to 1.0.1; only the reported
+  energies become metal-aware. (Defect isolated empirically by the
+  repository owner; mechanism traced and fix validated by the independent
+  audit.)
+
+### Example input regenerated (EJ1 follow-up)
+
+- `examples/glft2/ligand.pdbqt` is now the deposited 4FIY UDP crystal pose
+  (chain A, residue 701), prepared with Meeko: the heavy-atom coordinates
+  are preserved exactly and the two oxygens coordinating the Mn2+ in the
+  crystal (O1A 2.89 Å, O1B 2.79 Å) are typed as the unprotonated (=O)
+  sites. The previous bundled input was a translated copy whose closest
+  heavy atom sat ~5.6 Å from the Mn2+, so no crystal-pose claim was
+  reproducible from the bundled files (EJ1). The example is now a
+  legitimate redocking, and the reproducible metrics are stated in the
+  example README, `docs/validation/` (new `glft2_redock.log`) and the
+  repository READMEs.
+
+### Validation
+
+- Poses byte-identical to 1.0.1 for the audited systems (search untouched);
+  the 1iep fixed-pose regression and `--metals off` remain byte-identical
+  to stock AutoDock Vina 1.2.7 (CI-enforced); local ctest 4/4 PASS
+  (metal gradient, CN detection, unparametrized-metal, no-metal regression).
+- Reported affinities are now metal-aware and self-consistent: rescoring a
+  printed mode reproduces the reported energy (GlfT2 crystal redocking
+  mode 1: -8.861 printed vs -8.863 rescored; previously fork modes could
+  disagree by ~1.4 kcal/mol), and the phantom "Flex - Receptor" line is
+  gone. Reference shifts versus 1.0.1: 1s63 pose 1 -8.836 -> -9.051
+  (predicted -9.054); GlfT2 with the old translated input -7.045 -> -8.816
+  (exact match to the metal-aware function).
+- New GlfT2 crystal redocking (seed 42, exhaustiveness 16, static Boost
+  1.83 build): top-ranked pose -8.861 kcal/mol, 1.50 Å symmetry-aware
+  heavy-atom RMSD from the deposited UDP pose, coordinating the Mn2+ with
+  three oxygens at 2.12/2.18/2.51 Å; all nine modes coordinate the ion
+  (minimum O-Mn 2.10-2.62 Å, Harding-consistent).
+
+### Compatibility
+
+- Poses are unchanged versus 1.0.1; only the reported energies of metal
+  systems change (they now include M). Cross-campaign comparisons of metal
+  affinities against earlier releases must be recalibrated accordingly.
+  Receptors without parametrized metals keep byte-identical outputs, and
+  the CN target (receptor-side) is unaffected by the example input change.
+
+---
+
 ## Vina-Ion-Metal 1.0.1 (2026-10-23)
 
 Maintenance patch: corrects five defects found by the independent

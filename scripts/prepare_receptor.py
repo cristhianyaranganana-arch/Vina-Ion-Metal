@@ -58,7 +58,7 @@ import subprocess
 import sys
 import tempfile
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 # ---------------------------------------------------------------------------
 # Metal knowledge base (mirrors src/lib/metal_parameters.cpp)
